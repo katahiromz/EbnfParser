@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -27,7 +28,8 @@
 
 namespace EbnfParser
 {
-    typedef std::string string_type;
+    typedef std::string         string_type;
+    typedef std::stringstream   os_type;
 
     inline bool is_digit(char ch)
     {
@@ -116,9 +118,9 @@ namespace EbnfParser
                 m_integer = (int)std::strtol(str.c_str(), NULL, 10);
             }
         }
-        void print() const
+        void to_dbg(os_type& os) const
         {
-            printf("[TOKEN: %d, '%s']", m_type, m_str.c_str());
+            os << "[TOKEN: " << m_type << ", '" << m_str << "']";
         }
     };
     typedef std::vector<Token> tokens_type;
@@ -235,7 +237,7 @@ namespace EbnfParser
         size_t size() const;
 
         void print_errors() const;
-        void print_tokens() const;
+        void to_dbg(os_type& os) const;
 
         void push_back(const Token& t);
 
@@ -324,7 +326,7 @@ namespace EbnfParser
             #endif
         }
 
-        virtual void print() const = 0;
+        virtual void to_dbg(os_type& os) const = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -338,9 +340,9 @@ namespace EbnfParser
         IdentAst(const string_type& name) : BaseAst(ASTID_IDENT), m_name(name)
         {
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[IDENT: %s]", m_name.c_str());
+            os << "[IDENT: " << m_name << "]";
         }
         bool is_epsilon() const
         {
@@ -355,9 +357,9 @@ namespace EbnfParser
         IntegerAst(int integer) : BaseAst(ASTID_INTEGER), m_integer(integer)
         {
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[INTEGER: %d]", m_integer);
+            os << "[INTEGER: " << m_integer << "]";
         }
     };
 
@@ -368,9 +370,9 @@ namespace EbnfParser
         StringAst(const string_type& str) : BaseAst(ASTID_STRING), m_str(str)
         {
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[STRING: %s]", m_str.c_str());
+            os << "[STRING: " << m_str << "]";
         }
     };
 
@@ -381,9 +383,9 @@ namespace EbnfParser
         SpecialAst(const string_type& str) : BaseAst(ASTID_SPECIAL), m_str(str)
         {
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[SPECIAL: %s]", m_str.c_str());
+            os << "[SPECIAL: " << m_str << "]";
         }
     };
 
@@ -400,14 +402,14 @@ namespace EbnfParser
         {
             delete m_arg;
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[%s: ", m_str.c_str());
+            os << "[" << m_str << ": ";
             if (m_arg)
             {
-                m_arg->print();
+                m_arg->to_dbg(os);
             }
-            printf("]");
+            os << "]";
         }
     };
 
@@ -428,13 +430,13 @@ namespace EbnfParser
             delete m_left;
             delete m_right;
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[BINARY: ");
-            m_left->print();
-            printf(", ");
-            m_right->print();
-            printf("]");
+            os << "[BINARY: ";
+            m_left->to_dbg(os);
+            os << ", ";
+            m_right->to_dbg(os);
+            os << "]";
         }
     };
 
@@ -464,19 +466,19 @@ namespace EbnfParser
                 delete m_vec[i];
             }
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[SEQ: ");
+            os << "[SEQ: ";
             if (m_vec.size())
             {
-                m_vec[0]->print();
+                m_vec[0]->to_dbg(os);
                 for (size_t i = 1; i < m_vec.size(); ++i)
                 {
-                    printf(", ");
-                    m_vec[i]->print();
+                    os << ", ";
+                    m_vec[i]->to_dbg(os);
                 }
             }
-            printf("]");
+            os << "]";
         }
     };
 
@@ -485,9 +487,9 @@ namespace EbnfParser
         EmptyAst() : BaseAst(ASTID_EMPTY)
         {
         }
-        virtual void print() const
+        virtual void to_dbg(os_type& os) const
         {
-            printf("[EMPTY]");
+            os << "[EMPTY]";
         }
     };
 
@@ -592,18 +594,18 @@ namespace EbnfParser
     /////////////////////////////////////////////////////////////////////////
     // TokenStream inlines
 
-    inline void TokenStream::print_tokens() const
+    inline void TokenStream::to_dbg(os_type& os) const
     {
         if (m_tokens.size())
         {
-            m_tokens[0].print();
+            m_tokens[0].to_dbg(os);
             for (size_t i = 1; i < m_tokens.size(); ++i)
             {
-                printf(", ");
-                m_tokens[i].print();
+                os << ", ";
+                m_tokens[i].to_dbg(os);
             }
         }
-        printf("\n");
+        os << "\n";
     }
 
     inline TokenStream::TokenStream(StringScanner& scanner)

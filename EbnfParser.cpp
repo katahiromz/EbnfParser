@@ -13,7 +13,10 @@ bool just_do_it(const std::string& str)
 
     if (stream.scan_tokens())
     {
-        stream.print_tokens();
+        os_type os;
+        stream.to_dbg(os);
+        puts(os.str().c_str());
+
         printf("scanned\n");
 
         Parser parser(stream);
@@ -21,7 +24,10 @@ bool just_do_it(const std::string& str)
         {
             printf("parsed\n");
             BaseAst *ast = parser.ast();
-            ast->print();
+
+            os.clear();
+            ast->to_dbg(os);
+            puts(os.str().c_str());
             return true;
         }
         parser.print_errors();
