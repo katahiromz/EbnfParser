@@ -11,9 +11,10 @@ bool just_do_it(const std::string& str)
 
     TokenStream stream(scanner);
 
+    bool ret = false;
+    os_type os;
     if (stream.scan_tokens())
     {
-        os_type os;
         stream.to_dbg(os);
         puts(os.str().c_str());
 
@@ -27,12 +28,15 @@ bool just_do_it(const std::string& str)
 
             os.clear();
             ast->to_dbg(os);
-            puts(os.str().c_str());
-            return true;
+            ret = true;
         }
-        parser.print_errors();
+        else
+        {
+            parser.err_out(os);
+        }
     }
-    return false;
+    puts(os.str().c_str());
+    return ret;
 }
 
 int main(void)

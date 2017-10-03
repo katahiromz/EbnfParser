@@ -236,7 +236,7 @@ namespace EbnfParser
         size_t get_line() const;
         size_t size() const;
 
-        void print_errors() const;
+        void err_out(os_type& os) const;
         void to_dbg(os_type& os) const;
 
         void push_back(const Token& t);
@@ -514,9 +514,9 @@ namespace EbnfParser
 
         bool parse();
 
-        void print_errors() const
+        void err_out(os_type& os) const
         {
-            m_stream.print_errors();
+            m_stream.err_out(os);
         }
 
         BaseAst *visit_syntax();
@@ -636,17 +636,17 @@ namespace EbnfParser
         m_tokens.push_back(t);
     }
 
-    inline void TokenStream::print_errors() const
+    inline void TokenStream::err_out(os_type& os) const
     {
         for (size_t i = 0; i < m_errors.size(); ++i)
         {
             const AuxInfo& info = m_errors[i];
-            fprintf(stderr, "ERROR: %s, at line %u\n", info.m_text.c_str(), (int)info.m_line);
+            os << "ERROR: " << info.m_text << " , at line " << info.m_line << std::endl;
         }
         for (size_t i = 0; i < m_warnings.size(); ++i)
         {
             const AuxInfo& info = m_warnings[i];
-            fprintf(stderr, "WARNING: %s, at line %u\n", info.m_text.c_str(), (int)info.m_line);
+            os << "WARNING: " << info.m_text << " , at line " << info.m_line << std::endl;
         }
     }
 
