@@ -99,7 +99,7 @@ namespace EbnfParser
     // TOK_STRING: terminal_string
     // TOK_SYMBOL: '=', ';', '|', ',', '-', '*', '[', ']', '{', '}', '(', ')'
     // TOK_COMMENT: "(*" ... "*)"
-    // TOK_SPECIAL: "?"..."?"
+    // TOK_SPECIAL: "?" ... "?"
 
     class Token
     {
