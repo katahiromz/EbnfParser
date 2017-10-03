@@ -18,12 +18,12 @@ bool just_do_it(const std::string& str)
         stream.to_dbg(os);
         puts(os.str().c_str());
 
-        printf("scanned\n");
+        os << "scanned\n";
 
         Parser parser(stream);
         if (parser.parse())
         {
-            printf("parsed\n");
+            os << "parsed\n";
             BaseAst *ast = parser.ast();
             ast->to_dbg(os);
             ret = true;
