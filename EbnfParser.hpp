@@ -404,7 +404,7 @@ namespace EbnfParser
         }
         virtual void to_dbg(os_type& os) const
         {
-            os << "[" << m_str << ": ";
+            os << "[UNARY " << m_str << ": ";
             if (m_arg)
             {
                 m_arg->to_dbg(os);
@@ -432,7 +432,7 @@ namespace EbnfParser
         }
         virtual void to_dbg(os_type& os) const
         {
-            os << "[BINARY: ";
+            os << "[BINARY " << m_str << ": ";
             m_left->to_dbg(os);
             os << ", ";
             m_right->to_dbg(os);
