@@ -468,7 +468,7 @@ namespace EbnfParser
         }
         virtual void to_dbg(os_type& os) const
         {
-            os << "[SEQ: ";
+            os << "[SEQ " << m_str << ": ";
             if (m_vec.size())
             {
                 m_vec[0]->to_dbg(os);
