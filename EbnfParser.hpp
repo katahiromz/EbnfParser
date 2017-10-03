@@ -489,6 +489,7 @@ namespace EbnfParser
                 m_left->to_out(os);
                 os << " = ";
                 m_right->to_out(os);
+                os << ";\n";
                 return;
             }
             if (m_str == "-")
@@ -555,7 +556,6 @@ namespace EbnfParser
                 for (size_t i = 0; i < m_vec.size(); ++i)
                 {
                     m_vec[i]->to_out(os);
-                    os << ";\n";
                 }
                 return;
             }
