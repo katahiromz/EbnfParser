@@ -16,8 +16,6 @@ bool just_do_it(const std::string& str)
     if (stream.scan_tokens())
     {
         stream.to_dbg(os);
-        puts(os.str().c_str());
-
         os << "scanned\n";
 
         Parser parser(stream);
