@@ -25,8 +25,6 @@ bool just_do_it(const std::string& str)
         {
             printf("parsed\n");
             BaseAst *ast = parser.ast();
-
-            os.clear();
             ast->to_dbg(os);
             ret = true;
         }
