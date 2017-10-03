@@ -15,8 +15,8 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#undef STRICT_EBNF
-//#define STRICT_EBNF
+#define STRICT_EBNF
+//#undef STRICT_EBNF
 
 #if defined(NDEBUG) || 1
     #define PRINT_FUNCTION()    /*empty*/
