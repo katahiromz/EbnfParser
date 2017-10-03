@@ -6,12 +6,11 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#include <string>
-#include <vector>
-#include <sstream>
-#include <cstdio>
-#include <cassert>
-#include <cstring>
+#include <string>       // for std::string
+#include <vector>       // for std::vector
+#include <sstream>      // for std::stringstream
+#include <cassert>      // for assert macro
+#include <cstring>      // for std::strlen, std::strtol, ...
 
 /////////////////////////////////////////////////////////////////////////
 

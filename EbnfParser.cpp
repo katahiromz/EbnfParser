@@ -2,6 +2,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include "EbnfParser.hpp"
+#include <cstdio>       // for puts
 
 bool just_do_it(const std::string& str)
 {
