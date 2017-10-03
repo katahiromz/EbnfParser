@@ -832,6 +832,7 @@ namespace EbnfParser
 
             if (is_digit(ch))
             {
+                // integer
                 ungetch();
 
                 size_t line = get_line();
@@ -843,6 +844,7 @@ namespace EbnfParser
 
             if (ch == '"' || ch == '\'')
             {
+                // terminal_string
                 ungetch();
 
                 size_t line = get_line();
@@ -863,6 +865,7 @@ namespace EbnfParser
             if (is_alpha(ch) || ch == '_')
 #endif
             {
+                // meta_identifier
                 ungetch();
 
                 size_t line = get_line();
@@ -874,6 +877,7 @@ namespace EbnfParser
 
             if (ch == -1)
             {
+                // end of file
                 size_t line = get_line();
                 Token token("", TOK_EOF, line);
                 m_tokens.push_back(token);
@@ -885,6 +889,7 @@ namespace EbnfParser
                 ch = getch();
                 if (ch == '*')
                 {
+                    // comment
                     ungetch();
                     ungetch();
 
@@ -903,6 +908,7 @@ namespace EbnfParser
 
             if (ch == '?')
             {
+                // special
                 ungetch();
 
                 size_t line = get_line();
@@ -920,6 +926,7 @@ namespace EbnfParser
 
             if (strchr("=;|,-*[]{}()", ch) != NULL)
             {
+                // symbol
                 size_t line = get_line();
                 str.clear();
                 str += ch;
