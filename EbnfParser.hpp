@@ -1136,7 +1136,7 @@ namespace EbnfParser
             return 0;
 
         size_t index, line_count = 1;
-        for (index = 0; index < m_str.size(); index)
+        for (index = 0; index < m_str.size(); ++index)
         {
             if (m_str[index] == '\n')
             {
