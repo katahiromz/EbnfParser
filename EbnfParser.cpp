@@ -23,7 +23,10 @@ bool just_do_it(const std::string& str)
         {
             os << "parsed\n";
             BaseAst *ast = parser.ast();
+            os << "\nto_dbg:\n";
             ast->to_dbg(os);
+            os << "\n\nto_out:\n";
+            ast->to_out(os);
             ret = true;
         }
         else

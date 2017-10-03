@@ -327,6 +327,7 @@ namespace EbnfParser
         }
 
         virtual void to_dbg(os_type& os) const = 0;
+        virtual void to_out(os_type& os) const = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -343,6 +344,10 @@ namespace EbnfParser
         virtual void to_dbg(os_type& os) const
         {
             os << "[IDENT: " << m_name << "]";
+        }
+        virtual void to_out(os_type& os) const
+        {
+            os << m_name;
         }
         bool is_epsilon() const
         {
@@ -361,6 +366,10 @@ namespace EbnfParser
         {
             os << "[INTEGER: " << m_integer << "]";
         }
+        virtual void to_out(os_type& os) const
+        {
+            os << m_integer;
+        }
     };
 
     struct StringAst : public BaseAst
@@ -374,6 +383,13 @@ namespace EbnfParser
         {
             os << "[STRING: " << m_str << "]";
         }
+        virtual void to_out(os_type& os) const
+        {
+            if (m_str.find('"') == string_type::npos)
+                os << '"' << m_str << '"';
+            else
+                os << "'" << m_str << "'";
+        }
     };
 
     struct SpecialAst : public BaseAst
@@ -386,6 +402,10 @@ namespace EbnfParser
         virtual void to_dbg(os_type& os) const
         {
             os << "[SPECIAL: " << m_str << "]";
+        }
+        virtual void to_out(os_type& os) const
+        {
+            os << '?' << m_str << '?';
         }
     };
 
@@ -410,6 +430,30 @@ namespace EbnfParser
                 m_arg->to_dbg(os);
             }
             os << "]";
+        }
+        virtual void to_out(os_type& os) const
+        {
+            if (m_str == "optional")
+            {
+                os << '[';
+                m_arg->to_out(os);
+                os << ']';
+                return;
+            }
+            if (m_str == "repeated")
+            {
+                os << '{';
+                m_arg->to_out(os);
+                os << '}';
+                return;
+            }
+            if (m_str == "group")
+            {
+                os << '(';
+                m_arg->to_out(os);
+                os << ')';
+                return;
+            }
         }
     };
 
@@ -437,6 +481,30 @@ namespace EbnfParser
             os << ", ";
             m_right->to_dbg(os);
             os << "]";
+        }
+        virtual void to_out(os_type& os) const
+        {
+            if (m_str == "=")
+            {
+                m_left->to_out(os);
+                os << " = ";
+                m_right->to_out(os);
+                return;
+            }
+            if (m_str == "-")
+            {
+                m_left->to_out(os);
+                os << " - ";
+                m_right->to_out(os);
+                return;
+            }
+            if (m_str == "*")
+            {
+                m_left->to_out(os);
+                os << " * ";
+                m_right->to_out(os);
+                return;
+            }
         }
     };
 
@@ -480,6 +548,44 @@ namespace EbnfParser
             }
             os << "]";
         }
+        virtual void to_out(os_type& os) const
+        {
+            if (m_str == "rules")
+            {
+                for (size_t i = 0; i < m_vec.size(); ++i)
+                {
+                    m_vec[i]->to_out(os);
+                    os << ";\n";
+                }
+                return;
+            }
+            if (m_str == "defs")
+            {
+                if (m_vec.size())
+                {
+                    m_vec[0]->to_out(os);
+                    for (size_t i = 1; i < m_vec.size(); ++i)
+                    {
+                        os << " | ";
+                        m_vec[i]->to_out(os);
+                    }
+                }
+                return;
+            }
+            if (m_str == "terms")
+            {
+                if (m_vec.size())
+                {
+                    m_vec[0]->to_out(os);
+                    for (size_t i = 1; i < m_vec.size(); ++i)
+                    {
+                        os << ", ";
+                        m_vec[i]->to_out(os);
+                    }
+                }
+                return;
+            }
+        }
     };
 
     struct EmptyAst : public BaseAst
@@ -490,6 +596,9 @@ namespace EbnfParser
         virtual void to_dbg(os_type& os) const
         {
             os << "[EMPTY]";
+        }
+        virtual void to_out(os_type& os) const
+        {
         }
     };
 
@@ -1183,7 +1292,7 @@ namespace EbnfParser
     }
 
     // term = factor, ['-', exception];
-    // term is fact or BinaryAst("-", factor, exception).
+    // term is factor or BinaryAst("-", factor, exception).
     inline BaseAst *Parser::visit_term()
     {
         PRINT_FUNCTION();
