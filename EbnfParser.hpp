@@ -14,9 +14,6 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#define STRICT_EBNF
-//#undef STRICT_EBNF
-
 #if defined(NDEBUG) || 1
     #define PRINT_FUNCTION()    /*empty*/
 #else
@@ -24,6 +21,9 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////////
+// EBNF parser
+
+#define STRICT_EBNF     // ISO/IEC 14977 : 1996(E)
 
 namespace EbnfParser
 {
