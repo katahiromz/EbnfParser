@@ -329,7 +329,7 @@ namespace EbnfParser
 
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_out(os_type& os) const = 0;
-        virtual BaseAst *clone() = 0;
+        virtual BaseAst *clone() const = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -351,7 +351,7 @@ namespace EbnfParser
         {
             os << m_name;
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new IdentAst(m_name);
         }
@@ -372,7 +372,7 @@ namespace EbnfParser
         {
             os << m_integer;
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new IntegerAst(m_integer);
         }
@@ -396,7 +396,7 @@ namespace EbnfParser
             else
                 os << "'" << m_str << "'";
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new StringAst(m_str);
         }
@@ -417,7 +417,7 @@ namespace EbnfParser
         {
             os << '?' << m_str << '?';
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new SpecialAst(m_str);
         }
@@ -469,7 +469,7 @@ namespace EbnfParser
                 return;
             }
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             if (m_arg)
             {
@@ -529,7 +529,7 @@ namespace EbnfParser
                 return;
             }
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new BinaryAst(m_str, m_left->clone(), m_right->clone());
         }
@@ -565,7 +565,7 @@ namespace EbnfParser
         {
             return m_vec.size();
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             SeqAst *ast = new SeqAst(m_str);
             for (size_t i = 0; i < m_vec.size(); ++i)
@@ -639,7 +639,7 @@ namespace EbnfParser
         virtual void to_out(os_type& os) const
         {
         }
-        virtual BaseAst *clone()
+        virtual BaseAst *clone() const
         {
             return new EmptyAst();
         }
