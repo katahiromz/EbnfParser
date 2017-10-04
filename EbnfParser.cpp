@@ -26,7 +26,7 @@ static const TEST_ENTRY g_test_entries[] =
 #ifdef ISO_EBNF
     { 1, TR_SCAN_FAIL,      "list = '';" }, // empty string
     { 2, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
-    { 3, TR_SCAN_FAIL,     "underline_not_acceptable" },    // invalid identifier
+    { 3, TR_SCAN_FAIL,      "underline_not_acceptable" },    // invalid identifier
 #endif
     { 4, TR_SUCCESS,        "list = \"a\";" },
     { 5, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
@@ -34,7 +34,7 @@ static const TEST_ENTRY g_test_entries[] =
     { 7, TR_SUCCESS,        "list = \"a\"; arg = list | list, list;" },
     { 8, TR_PARSE_FAIL,     "list v = \"a\";" },    // invalid syntax
     { 9, TR_PARSE_FAIL,     "list = v \"a\";" },    // comma needed
-    { 10, TR_PARSE_FAIL,     "'a' \"a\"" },  // invalid syntax
+    { 10, TR_PARSE_FAIL,    "'a' \"a\"" },  // invalid syntax
     { 11, TR_PARSE_FAIL,    "z = 'a' \"a\"" }, // comma needed
     { 12, TR_SUCCESS,       "z = 'a', \"a\";" },
     { 13, TR_SUCCESS,       "z = (a | b | c);" },
