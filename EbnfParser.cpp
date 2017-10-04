@@ -15,7 +15,7 @@ struct TEST_ENTRY
     const char *input;
 };
 
-enum TestReturn
+enum TEST_RETURN
 {
     TR_SUCCESS = 0,
     TR_SCAN_FAIL,
@@ -56,7 +56,7 @@ static const TEST_ENTRY g_test_entries[] =
     { 28, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
 };
 
-TestReturn just_do_it(const std::string& str)
+TEST_RETURN just_do_it(const std::string& str)
 {
     using namespace EbnfParser;
 
@@ -64,7 +64,7 @@ TestReturn just_do_it(const std::string& str)
 
     TokenStream stream(scanner);
 
-    TestReturn ret = TR_SCAN_FAIL;
+    TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
     if (stream.scan_tokens())
     {
