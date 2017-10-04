@@ -14,7 +14,7 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#if defined(NDEBUG) || 0
+#if defined(NDEBUG) || 1
     #define PRINT_FUNCTION()    /*empty*/
 #else
     #define PRINT_FUNCTION()    printf("%s\n", __func__);
@@ -749,12 +749,12 @@ namespace EbnfParser
         for (size_t i = 0; i < m_errors.size(); ++i)
         {
             const AuxInfo& info = m_errors[i];
-            os << "ERROR: " << info.m_text << " , at line " << info.m_line << std::endl;
+            os << "ERROR: " << info.m_text << ", at line " << info.m_line << std::endl;
         }
         for (size_t i = 0; i < m_warnings.size(); ++i)
         {
             const AuxInfo& info = m_warnings[i];
-            os << "WARNING: " << info.m_text << " , at line " << info.m_line << std::endl;
+            os << "WARNING: " << info.m_text << ", at line " << info.m_line << std::endl;
         }
     }
 

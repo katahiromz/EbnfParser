@@ -28,10 +28,15 @@ static const TEST_ENTRY g_test_entries[] =
     { 10, 2, "z = 'a' \"a\"" }, // comma needed
     { 11, 0, "z = 'a', \"a\";" },
     { 12, 0, "z = (a | b | c);" },
-    { 13, 0, "z = (a | b, c);" },
+    { 13, 0, "z = [a , b, c];" },
+    { 14, 0, "z = [a | b | c];" },
+    { 15, 0, "z = [a | (b | c)];" },
+    { 16, 2, "z = [a | (b | c)]; a = test" },
+    { 17, 0, "z = [a | (b | c)]; a = test;" },
+    { 18, 2, "'z' = a; a = test;" },
 };
 
-// 0:success, 1:scanner g_failed, 2:parser g_failed
+// 0:success, 1:scanner failure, 2:parser failure
 int just_do_it(const std::string& str)
 {
     using namespace EbnfParser;
