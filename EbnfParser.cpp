@@ -112,6 +112,8 @@ int main(void)
     }
 
     printf("g_executed: %d, g_failed: %d\n", g_executed, g_failed);
+    if (g_failed == 0)
+        printf("SUCCESS!\n");
 
     assert(EbnfParser::BaseAst::alive_count() == 0);
     return 0;
