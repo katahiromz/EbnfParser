@@ -1,4 +1,5 @@
 // EbnfParser.cpp --- ISO EBNF parser
+// See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
 #include "EbnfParser.hpp"

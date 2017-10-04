@@ -1,4 +1,5 @@
 // EbnfParser.hpp --- ISO EBNF parser
+// See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_PARSER_HPP_
