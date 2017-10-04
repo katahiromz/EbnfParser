@@ -37,6 +37,8 @@ static const TEST_ENTRY g_test_entries[] =
     { 19, 2, "'z';" },    // invalid syntax
     { 20, 2, "z;" },    // invalid syntax
     { 21, 2, "z" },    // invalid syntax
+    { 22, 1, "@@" },    // invalid character
+    { 23, 1, "!" },    // invalid character
 };
 
 // 0:success, 1:scanner failure, 2:parser failure
