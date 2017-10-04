@@ -305,6 +305,7 @@ namespace EbnfParser
     struct BaseAst
     {
         AstID m_id;
+
 #ifndef NDEBUG
         static int& alive_count()
         {
