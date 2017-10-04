@@ -3,10 +3,10 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include "EbnfParser.hpp"
-#include <cstdio>       // for puts
+#include <cstdio>       // for std::puts
 
-int g_executed = 0;
-int g_failed = 0;
+int g_num_executions = 0;       // number of test executions
+int g_num_failures = 0;         // number of test failures
 
 struct TEST_ENTRY
 {
@@ -173,18 +173,18 @@ bool do_test_entry(const TEST_ENTRY *entry)
     if (ret != entry->ret)
     {
         printf("#%d: FAILED: expected %d, got %d\n", entry->entry_number, entry->ret, ret);
-        ++g_failed;
+        ++g_num_failures;
         failed = true;
     }
-    ++g_executed;
+    ++g_num_executions;
     if (num_rules != entry->num_rules)
     {
         printf("#%d: FAILED: expected %u, got %u\n",
                entry->entry_number, (int)entry->num_rules, (int)num_rules);
-        ++g_failed;
+        ++g_num_failures;
         failed = true;
     }
-    ++g_executed;
+    ++g_num_executions;
     return !failed;
 }
 
@@ -196,10 +196,10 @@ int main(void)
         do_test_entry(&g_test_entries[i]);
     }
 
-    printf("g_executed: %d, g_failed: %d\n", g_executed, g_failed);
-    if (g_failed == 0)
+    printf("executions %d, failures %d\n", g_num_executions, g_num_failures);
+    if (g_num_failures == 0)
         printf("SUCCESS!\n");
 
     assert(EbnfParser::BaseAst::alive_count() == 0);
-    return g_failed;
+    return g_num_failures;
 }
