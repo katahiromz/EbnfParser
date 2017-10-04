@@ -23,29 +23,29 @@ enum TestReturn
 
 static const TEST_ENTRY g_test_entries[] =
 {
-    { 1, TR_SCAN_FAIL, "list = '';" }, // empty string
-    { 2, TR_SCAN_FAIL, "list = \"\";" }, // empty string
-    { 3, TR_SUCCESS, "list = \"a\";" },
-    { 4, TR_PARSE_FAIL, "list = \"a\"; arg = list | list list;" },  // comma needed
-    { 5, TR_PARSE_FAIL, "list = \"a\"; arg = list | list, list" },  // semicolon needed
-    { 6, TR_SUCCESS, "list = \"a\"; arg = list | list, list;" },
-    { 7, TR_PARSE_FAIL, "list v = \"a\";" },    // invalid syntax
-    { 8, TR_PARSE_FAIL, "list = v \"a\";" },    // comma needed
-    { 9, TR_PARSE_FAIL, "'a' \"a\"" },  // invalid syntax
-    { 10, TR_PARSE_FAIL, "z = 'a' \"a\"" }, // comma needed
-    { 11, TR_SUCCESS, "z = 'a', \"a\";" },
-    { 12, TR_SUCCESS, "z = (a | b | c);" },
-    { 13, TR_SUCCESS, "z = [a , b, c];" },
-    { 14, TR_SUCCESS, "z = [a | b | c];" },
-    { 15, TR_SUCCESS, "z = [a | (b | c)];" },
-    { 16, TR_PARSE_FAIL, "z = [a | (b | c)]; a = test" },   // semicolon needed
-    { 17, TR_SUCCESS, "z = [a | (b | c)]; a = test;" },
-    { 18, TR_PARSE_FAIL, "'z' = a; a = test;" },    // invalid syntax
-    { 19, TR_PARSE_FAIL, "'z';" },    // invalid syntax
-    { 20, TR_PARSE_FAIL, "z;" },    // invalid syntax
-    { 21, TR_PARSE_FAIL, "z" },    // invalid syntax
-    { 22, TR_SCAN_FAIL, "@@" },    // invalid character
-    { 23, TR_SCAN_FAIL, "!" },    // invalid character
+    { 1, TR_SCAN_FAIL,      "list = '';" }, // empty string
+    { 2, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
+    { 3, TR_SUCCESS,        "list = \"a\";" },
+    { 4, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
+    { 5, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list, list" },  // semicolon needed
+    { 6, TR_SUCCESS,        "list = \"a\"; arg = list | list, list;" },
+    { 7, TR_PARSE_FAIL,     "list v = \"a\";" },    // invalid syntax
+    { 8, TR_PARSE_FAIL,     "list = v \"a\";" },    // comma needed
+    { 9, TR_PARSE_FAIL,     "'a' \"a\"" },  // invalid syntax
+    { 10, TR_PARSE_FAIL,    "z = 'a' \"a\"" }, // comma needed
+    { 11, TR_SUCCESS,       "z = 'a', \"a\";" },
+    { 12, TR_SUCCESS,       "z = (a | b | c);" },
+    { 13, TR_SUCCESS,       "z = [a , b, c];" },
+    { 14, TR_SUCCESS,       "z = [a | b | c];" },
+    { 15, TR_SUCCESS,       "z = [a | (b | c)];" },
+    { 16, TR_PARSE_FAIL,    "z = [a | (b | c)]; a = test" },   // semicolon needed
+    { 17, TR_SUCCESS,       "z = [a | (b | c)]; a = test;" },
+    { 18, TR_PARSE_FAIL,    "'z' = a; a = test;" },    // invalid syntax
+    { 19, TR_PARSE_FAIL,    "'z';" },    // invalid syntax
+    { 20, TR_PARSE_FAIL,    "z;" },    // invalid syntax
+    { 21, TR_PARSE_FAIL,    "z" },    // invalid syntax
+    { 22, TR_SCAN_FAIL,     "@@" },    // invalid character
+    { 23, TR_SCAN_FAIL,     "!" },    // invalid character
 };
 
 TestReturn just_do_it(const std::string& str)
