@@ -51,6 +51,8 @@ static const TEST_ENTRY g_test_entries[] =
     { 24, TR_SCAN_FAIL,     "!" },    // invalid character
     { 25, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
     { 26, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
+    { 27, TR_SCAN_FAIL,     "?not-terminated" },    // invalid special
+    { 28, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
 };
 
 TestReturn just_do_it(const std::string& str)
