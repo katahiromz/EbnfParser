@@ -349,10 +349,6 @@ namespace EbnfParser
         {
             os << m_name;
         }
-        bool is_epsilon() const
-        {
-            return m_name == "epsilon";
-        }
     };
 
     struct IntegerAst : public BaseAst
@@ -1251,9 +1247,18 @@ namespace EbnfParser
             seq->push_back(sing);
 
             if (type() == TOK_SYMBOL && str() == "|")
+            {
                 next();
-            else
+            }
+            else if (type() == TOK_SYMBOL && str() == ";")
+            {
+                seq->push_back(new EmptyAst());
                 break;
+            }
+            else
+            {
+                break;
+            }
 
             sing = visit_single_definition();
             if (sing == NULL)

@@ -48,12 +48,56 @@ static const TEST_ENTRY g_test_entries[] =
     { 20, TR_PARSE_FAIL,    "'z';" },    // invalid syntax
     { 21, TR_PARSE_FAIL,    "z;" },    // invalid syntax
     { 22, TR_PARSE_FAIL,    "z" },    // invalid syntax
-    { 23, TR_SCAN_FAIL,     "@@" },    // invalid character
-    { 24, TR_SCAN_FAIL,     "!" },    // invalid character
-    { 25, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
-    { 26, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
-    { 27, TR_SCAN_FAIL,     "?not-terminated" },    // invalid special
-    { 28, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
+    { 23, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
+    { 24, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
+    { 25, TR_SCAN_FAIL,     "?not-terminated" },    // invalid special
+    { 26, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
+    { 27, TR_SUCCESS,       "xx = \"A\" - xx;" },
+    { 28, TR_SUCCESS,       "line = 5 * \" \", (character - (\" \" | \"0\")), 66 * [character];" },
+    { 29, TR_SUCCESS,       "line = character - \"C\", 4 * character, character - (\" \" | \"0\"), 66 * [character];" },
+    { 30, TR_SUCCESS,
+        "aa = \"A\";\n"
+        "bb = 3 * aa, \"B\";\n"
+        "cc = 3 * [aa], \"C\";\n"
+        "dd = {aa}, \"D\";\n"
+        "ee = aa, {aa}, \"E\";\n"
+        "ff = 3 * aa, 3 * [aa], \"F\";\n"
+        "gg = 3 * {aa}, \"D\";\n" },
+    { 31, TR_SUCCESS,
+        "letter = 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', "
+        "'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', "
+        "'T', 'U', 'V', 'W', 'X', 'Y', 'Z';\n" },
+    { 32, TR_SUCCESS, "vowel = 'A' | 'E' | 'I' | 'O' | 'U';" },
+    { 33, TR_SUCCESS, "ee = {'A'}-, 'E';" },
+    { 34, TR_SCAN_FAIL, "." },
+    { 35, TR_SCAN_FAIL, ":" },
+    { 36, TR_SCAN_FAIL, "!" },
+    { 37, TR_SCAN_FAIL, "+" },
+    { 38, TR_SCAN_FAIL, "%" },
+    { 39, TR_SCAN_FAIL, "@" },
+    { 40, TR_SCAN_FAIL, "&" },
+    { 41, TR_SCAN_FAIL, "#" },
+    { 42, TR_SCAN_FAIL, "$" },
+    { 43, TR_SCAN_FAIL, "<" },
+    { 44, TR_SCAN_FAIL, ">" },
+    { 45, TR_SCAN_FAIL, "/" },
+    { 46, TR_SCAN_FAIL, "\\" },
+    { 47, TR_SCAN_FAIL, "^" },
+    { 48, TR_SCAN_FAIL, "`" },
+    { 49, TR_SCAN_FAIL, "~" },
+    { 50, TR_SUCCESS, "(* this is a test of comments *) test = test, 'a'; (* comment *)" },
+    { 51, TR_SUCCESS, "other = ' ' | ':' | '+' | '_' | '%' | '@' | '&' | '#' | '$' | '<' | '>' | '\\' | '^' | '`' | '~';" },
+    { 52, TR_SUCCESS, "special = ? ISO 6429 character Horizontal Tabulation ?;" },
+    { 53, TR_SUCCESS, "newline = {? ISO 6429 character Carriage Return ?}, ? ISO 6429 character Line Feed ?, {? ISO 6429 character Carriage Return ?};" },
+    { 54, TR_PARSE_FAIL, "test = 'test';;" },   // double semicolon
+    { 55, TR_SUCCESS, "gapfreesymbol = terminalcharacter - (firstquotesymbol | secondquotesymbol) | terminalstring;" },
+    { 56, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule};" },
+    { 57, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule}; syntaxrule = metaidentifier, '=', definitionslist, ';';" },
+    { 58, TR_SUCCESS, "definitionslist = singledefinition, {definitionseparatorsymbol, singledefinition};" },
+    { 59, TR_SUCCESS, "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm}; concatenatesymbol = ',';" },
+    { 60, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
+    { 61, TR_SUCCESS, "empty = ;" },
+    { 62, TR_SUCCESS, "text = character { character } | ;" },
 };
 
 TEST_RETURN just_do_it(const std::string& str)
