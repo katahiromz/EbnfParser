@@ -31,9 +31,12 @@ static const TEST_ENTRY g_test_entries[] =
     { 13, 0, "z = [a , b, c];" },
     { 14, 0, "z = [a | b | c];" },
     { 15, 0, "z = [a | (b | c)];" },
-    { 16, 2, "z = [a | (b | c)]; a = test" },
+    { 16, 2, "z = [a | (b | c)]; a = test" },   // semicolon needed
     { 17, 0, "z = [a | (b | c)]; a = test;" },
-    { 18, 2, "'z' = a; a = test;" },
+    { 18, 2, "'z' = a; a = test;" },    // invalid syntax
+    { 19, 2, "'z';" },    // invalid syntax
+    { 20, 2, "z;" },    // invalid syntax
+    { 21, 2, "z" },    // invalid syntax
 };
 
 // 0:success, 1:scanner failure, 2:parser failure
