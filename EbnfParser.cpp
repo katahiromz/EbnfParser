@@ -14,35 +14,41 @@ struct TEST_ENTRY
     const char *input;
 };
 
-static const TEST_ENTRY g_test_entries[] =
+enum TestReturn
 {
-    { 1, 1, "list = '';" }, // empty string
-    { 2, 1, "list = \"\";" }, // empty string
-    { 3, 0, "list = \"a\";" },
-    { 4, 2, "list = \"a\"; arg = list | list list;" },  // comma needed
-    { 5, 2, "list = \"a\"; arg = list | list, list" },  // semicolon needed
-    { 6, 0, "list = \"a\"; arg = list | list, list;" },
-    { 7, 2, "list v = \"a\";" },    // invalid syntax
-    { 8, 2, "list = v \"a\";" },    // comma needed
-    { 9, 2, "'a' \"a\"" },  // invalid syntax
-    { 10, 2, "z = 'a' \"a\"" }, // comma needed
-    { 11, 0, "z = 'a', \"a\";" },
-    { 12, 0, "z = (a | b | c);" },
-    { 13, 0, "z = [a , b, c];" },
-    { 14, 0, "z = [a | b | c];" },
-    { 15, 0, "z = [a | (b | c)];" },
-    { 16, 2, "z = [a | (b | c)]; a = test" },   // semicolon needed
-    { 17, 0, "z = [a | (b | c)]; a = test;" },
-    { 18, 2, "'z' = a; a = test;" },    // invalid syntax
-    { 19, 2, "'z';" },    // invalid syntax
-    { 20, 2, "z;" },    // invalid syntax
-    { 21, 2, "z" },    // invalid syntax
-    { 22, 1, "@@" },    // invalid character
-    { 23, 1, "!" },    // invalid character
+    TR_SUCCESS = 0,
+    TR_SCAN_FAIL,
+    TR_PARSE_FAIL,
 };
 
-// 0:success, 1:scanner failure, 2:parser failure
-int just_do_it(const std::string& str)
+static const TEST_ENTRY g_test_entries[] =
+{
+    { 1, TR_SCAN_FAIL, "list = '';" }, // empty string
+    { 2, TR_SCAN_FAIL, "list = \"\";" }, // empty string
+    { 3, TR_SUCCESS, "list = \"a\";" },
+    { 4, TR_PARSE_FAIL, "list = \"a\"; arg = list | list list;" },  // comma needed
+    { 5, TR_PARSE_FAIL, "list = \"a\"; arg = list | list, list" },  // semicolon needed
+    { 6, TR_SUCCESS, "list = \"a\"; arg = list | list, list;" },
+    { 7, TR_PARSE_FAIL, "list v = \"a\";" },    // invalid syntax
+    { 8, TR_PARSE_FAIL, "list = v \"a\";" },    // comma needed
+    { 9, TR_PARSE_FAIL, "'a' \"a\"" },  // invalid syntax
+    { 10, TR_PARSE_FAIL, "z = 'a' \"a\"" }, // comma needed
+    { 11, TR_SUCCESS, "z = 'a', \"a\";" },
+    { 12, TR_SUCCESS, "z = (a | b | c);" },
+    { 13, TR_SUCCESS, "z = [a , b, c];" },
+    { 14, TR_SUCCESS, "z = [a | b | c];" },
+    { 15, TR_SUCCESS, "z = [a | (b | c)];" },
+    { 16, TR_PARSE_FAIL, "z = [a | (b | c)]; a = test" },   // semicolon needed
+    { 17, TR_SUCCESS, "z = [a | (b | c)]; a = test;" },
+    { 18, TR_PARSE_FAIL, "'z' = a; a = test;" },    // invalid syntax
+    { 19, TR_PARSE_FAIL, "'z';" },    // invalid syntax
+    { 20, TR_PARSE_FAIL, "z;" },    // invalid syntax
+    { 21, TR_PARSE_FAIL, "z" },    // invalid syntax
+    { 22, TR_SCAN_FAIL, "@@" },    // invalid character
+    { 23, TR_SCAN_FAIL, "!" },    // invalid character
+};
+
+TestReturn just_do_it(const std::string& str)
 {
     using namespace EbnfParser;
 
@@ -50,25 +56,21 @@ int just_do_it(const std::string& str)
 
     TokenStream stream(scanner);
 
-    int ret = 1;
+    TestReturn ret = TR_SCAN_FAIL;
     os_type os;
     if (stream.scan_tokens())
     {
-        ret = 2;
-#ifndef NDEBUG
+        ret = TR_PARSE_FAIL;
         stream.to_dbg(os);
-#endif
 
         Parser parser(stream);
         if (parser.parse())
         {
-            ret = 0;
+            ret = TR_SUCCESS;
             BaseAst *ast = parser.ast();
 
-#ifndef NDEBUG
             os << "\nto_dbg:\n";
             ast->to_dbg(os);
-#endif
             os << "\n\nto_out:\n";
             ast->to_out(os);
         }
@@ -81,7 +83,9 @@ int just_do_it(const std::string& str)
     {
         stream.err_out(os);
     }
+#ifndef NDEBUG
     puts(os.str().c_str());
+#endif
     return ret;
 }
 
