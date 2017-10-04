@@ -64,11 +64,11 @@ static const TEST_ENTRY g_test_entries[] =
         "ff = 3 * aa, 3 * [aa], \"F\";\n"
         "gg = 3 * {aa}, \"D\";\n" },
     { 31, TR_SUCCESS,
-        "letter = 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', "
-        "'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', "
-        "'T', 'U', 'V', 'W', 'X', 'Y', 'Z';\n" },
+        "letter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | "
+        "'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | "
+        "'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';\n" },
     { 32, TR_SUCCESS, "vowel = 'A' | 'E' | 'I' | 'O' | 'U';" },
-    { 33, TR_SUCCESS, "ee = {'A'}-, 'E';" },
+    { 33, TR_SUCCESS, "ee = {'A'} - , 'E';" },
     { 34, TR_SCAN_FAIL, "." },
     { 35, TR_SCAN_FAIL, ":" },
     { 36, TR_SCAN_FAIL, "!" },
@@ -97,8 +97,8 @@ static const TEST_ENTRY g_test_entries[] =
     { 59, TR_SUCCESS, "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm}; concatenatesymbol = ',';" },
     { 60, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
     { 61, TR_SUCCESS, "empty = ;" },
-    { 62, TR_SUCCESS, "text = character { character } | ;" },
-    { 63, TR_SUCCESS, "text = | character { character };" },
+    { 62, TR_SUCCESS, "text = character, { character } | ;" },
+    { 63, TR_SUCCESS, "text = | character, { character };" },
 };
 
 TEST_RETURN just_do_it(const std::string& str)
@@ -111,6 +111,7 @@ TEST_RETURN just_do_it(const std::string& str)
 
     TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
+    os << str << std::endl;
     if (stream.scan_tokens())
     {
         ret = TR_PARSE_FAIL;

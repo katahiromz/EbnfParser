@@ -15,7 +15,7 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#if defined(NDEBUG) || 1
+#if defined(NDEBUG) || 0
     #define PRINT_FUNCTION()    /*empty*/
 #else
     #define PRINT_FUNCTION()    printf("%s\n", __func__);
@@ -1237,31 +1237,26 @@ namespace EbnfParser
     {
         PRINT_FUNCTION();
 
-        BaseAst *sing = visit_single_definition();
-        if (sing == NULL)
+        BaseAst *ast = visit_single_definition();
+        if (ast == NULL)
             return NULL;
 
         SeqAst *seq = new SeqAst("defs");
         for (;;)
         {
-            seq->push_back(sing);
+            seq->push_back(ast);
 
             if (type() == TOK_SYMBOL && str() == "|")
             {
                 next();
-            }
-            else if (type() == TOK_SYMBOL && str() == ";")
-            {
-                seq->push_back(new EmptyAst());
-                break;
             }
             else
             {
                 break;
             }
 
-            sing = visit_single_definition();
-            if (sing == NULL)
+            ast = visit_single_definition();
+            if (ast == NULL)
             {
                 delete seq;
                 return NULL;
@@ -1366,7 +1361,7 @@ namespace EbnfParser
     // primary = optional_sequence | repeated_sequence |
     //           special_sequence | grouped_sequence |
     //           meta_identifier | terminal_string | empty;
-    // primary is StringAst, IdentAst, SpecialAst, SeqAst, or EmptyAst.
+    // primary is StringAst, IdentAst, SpecialAst, SeqAst, or EmptyAst*/.
     inline BaseAst *Parser::visit_primary()
     {
         PRINT_FUNCTION();
@@ -1402,7 +1397,12 @@ namespace EbnfParser
                 ret = visit_grouped_sequence();
                 break;
             }
-            ret = new EmptyAst();
+            if (str() == ";" || str() == "|" || str() == ",")
+            {
+                ret = new EmptyAst();
+                break;
+            }
+            ret = NULL;
             break;
         default:
             ret = new EmptyAst();
