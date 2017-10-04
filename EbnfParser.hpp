@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_PARSER_HPP_
-#define EBNF_PARSER_HPP_        5   // Version 5
+#define EBNF_PARSER_HPP_        6   // Version 6
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +214,7 @@ namespace EbnfParser
         bool scan_tokens();
 
         void delete_comments();
+        void join_words();
 
         void clear_errors()
         {
@@ -982,6 +983,21 @@ namespace EbnfParser
         return m_errors.empty();
     }
 
+    inline void TokenStream::join_words()
+    {
+        for (size_t i = 0; i < m_tokens.size() - 1; ++i)
+        {
+            if (m_tokens[i].m_type == TOK_IDENT &&
+                m_tokens[i + 1].m_type == TOK_IDENT)
+            {
+                m_tokens[i].m_str += " ";
+                m_tokens[i].m_str += m_tokens[i + 1].m_str;
+                m_tokens.erase(m_tokens.begin() + (i + 1));
+                --i;
+            }
+        }
+    }
+
     inline void TokenStream::delete_comments()
     {
         for (size_t i = m_tokens.size(); i > 0; )
@@ -1197,6 +1213,7 @@ namespace EbnfParser
             return false;
 
         m_stream.delete_comments();
+        m_stream.join_words();
 
         delete m_ast;
         m_ast = visit_syntax();
