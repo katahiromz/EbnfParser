@@ -524,6 +524,10 @@ namespace EbnfParser
             assert(ast);
             m_vec.push_back(ast);
         }
+        size_t size() const
+        {
+            return m_vec.size();
+        }
         ~SeqAst()
         {
             for (size_t i = 0; i < m_vec.size(); ++i)

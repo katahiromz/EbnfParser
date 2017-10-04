@@ -11,6 +11,7 @@ int g_failed = 0;
 struct TEST_ENTRY
 {
     int entry_number;   // #
+    size_t num_rules;   // number of rules
     int ret;            // return value
     const char *input;
 };
@@ -25,37 +26,37 @@ enum TEST_RETURN
 static const TEST_ENTRY g_test_entries[] =
 {
 #ifdef ISO_EBNF
-    { 1, TR_SCAN_FAIL,      "list = '';" }, // empty string
-    { 2, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
-    { 3, TR_SCAN_FAIL,      "underline_not_allowed" },    // invalid identifier
+    { 1, 0, TR_SCAN_FAIL,      "list = '';" }, // empty string
+    { 2, 0, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
+    { 3, 0, TR_SCAN_FAIL,      "underline_not_allowed" },    // invalid identifier
 #endif
-    { 4, TR_SUCCESS,        "list = \"a\";" },
-    { 5, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
-    { 6, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list, list" },  // semicolon needed
-    { 7, TR_SUCCESS,        "list = \"a\"; arg = list | list, list;" },
-    { 8, TR_PARSE_FAIL,     "list v = \"a\";" },    // invalid syntax
-    { 9, TR_PARSE_FAIL,     "list = v \"a\";" },    // comma needed
-    { 10, TR_PARSE_FAIL,    "'a' \"a\"" },  // invalid syntax
-    { 11, TR_PARSE_FAIL,    "z = 'a' \"a\"" }, // comma needed
-    { 12, TR_SUCCESS,       "z = 'a', \"a\";" },
-    { 13, TR_SUCCESS,       "z = (a | b | c);" },
-    { 14, TR_SUCCESS,       "z = [a , b, c];" },
-    { 15, TR_SUCCESS,       "z = [a | b | c];" },
-    { 16, TR_SUCCESS,       "z = [a | (b | c)];" },
-    { 17, TR_PARSE_FAIL,    "z = [a | (b | c)]; a = test" },   // semicolon needed
-    { 18, TR_SUCCESS,       "z = [a | (b | c)]; a = test;" },
-    { 19, TR_PARSE_FAIL,    "'z' = a; a = test;" },    // invalid syntax
-    { 20, TR_PARSE_FAIL,    "'z';" },    // invalid syntax
-    { 21, TR_PARSE_FAIL,    "z;" },    // invalid syntax
-    { 22, TR_PARSE_FAIL,    "z" },    // invalid syntax
-    { 23, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
-    { 24, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
-    { 25, TR_SCAN_FAIL,     "?not-terminated" },    // invalid special
-    { 26, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
-    { 27, TR_SUCCESS,       "xx = \"A\" - xx;" },
-    { 28, TR_SUCCESS,       "line = 5 * \" \", (character - (\" \" | \"0\")), 66 * [character];" },
-    { 29, TR_SUCCESS,       "line = character - \"C\", 4 * character, character - (\" \" | \"0\"), 66 * [character];" },
-    { 30, TR_SUCCESS,
+    { 4, 1, TR_SUCCESS,        "list = \"a\";" },
+    { 5, 0, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
+    { 6, 0, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list, list" },  // semicolon needed
+    { 7, 2, TR_SUCCESS,        "list = \"a\"; arg = list | list, list;" },
+    { 8, 0, TR_PARSE_FAIL,     "list v = \"a\";" },    // invalid syntax
+    { 9, 0, TR_PARSE_FAIL,     "list = v \"a\";" },    // comma needed
+    { 10, 0, TR_PARSE_FAIL,    "'a' \"a\"" },  // invalid syntax
+    { 11, 0, TR_PARSE_FAIL,    "z = 'a' \"a\"" }, // comma needed
+    { 12, 1, TR_SUCCESS,       "z = 'a', \"a\";" },
+    { 13, 1, TR_SUCCESS,       "z = (a | b | c);" },
+    { 14, 1, TR_SUCCESS,       "z = [a , b, c];" },
+    { 15, 1, TR_SUCCESS,       "z = [a | b | c];" },
+    { 16, 1, TR_SUCCESS,       "z = [a | (b | c)];" },
+    { 17, 0, TR_PARSE_FAIL,    "z = [a | (b | c)]; a = test" },   // semicolon needed
+    { 18, 2, TR_SUCCESS,       "z = [a | (b | c)]; a = test;" },
+    { 19, 0, TR_PARSE_FAIL,    "'z' = a; a = test;" },    // invalid syntax
+    { 20, 0, TR_PARSE_FAIL,    "'z';" },    // invalid syntax
+    { 21, 0, TR_PARSE_FAIL,    "z;" },    // invalid syntax
+    { 22, 0, TR_PARSE_FAIL,    "z" },    // invalid syntax
+    { 23, 0, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
+    { 24, 0, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
+    { 25, 0, TR_SCAN_FAIL,     "?not-terminated" },    // invalid special
+    { 26, 0, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
+    { 27, 1, TR_SUCCESS,       "xx = \"A\" - xx;" },
+    { 28, 1, TR_SUCCESS,       "line = 5 * \" \", (character - (\" \" | \"0\")), 66 * [character];" },
+    { 29, 1, TR_SUCCESS,       "line = character - \"C\", 4 * character, character - (\" \" | \"0\"), 66 * [character];" },
+    { 30, 7, TR_SUCCESS,
         "aa = \"A\";\n"
         "bb = 3 * aa, \"B\";\n"
         "cc = 3 * [aa], \"C\";\n"
@@ -63,46 +64,46 @@ static const TEST_ENTRY g_test_entries[] =
         "ee = aa, {aa}, \"E\";\n"
         "ff = 3 * aa, 3 * [aa], \"F\";\n"
         "gg = 3 * {aa}, \"D\";\n" },
-    { 31, TR_SUCCESS,
+    { 31, 1, TR_SUCCESS,
         "letter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | "
         "'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | "
         "'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';\n" },
-    { 32, TR_SUCCESS, "vowel = 'A' | 'E' | 'I' | 'O' | 'U';" },
-    { 33, TR_SUCCESS, "ee = {'A'} - , 'E';" },
-    { 34, TR_SCAN_FAIL, "." },
-    { 35, TR_SCAN_FAIL, ":" },
-    { 36, TR_SCAN_FAIL, "!" },
-    { 37, TR_SCAN_FAIL, "+" },
-    { 38, TR_SCAN_FAIL, "%" },
-    { 39, TR_SCAN_FAIL, "@" },
-    { 40, TR_SCAN_FAIL, "&" },
-    { 41, TR_SCAN_FAIL, "#" },
-    { 42, TR_SCAN_FAIL, "$" },
-    { 43, TR_SCAN_FAIL, "<" },
-    { 44, TR_SCAN_FAIL, ">" },
-    { 45, TR_SCAN_FAIL, "/" },
-    { 46, TR_SCAN_FAIL, "\\" },
-    { 47, TR_SCAN_FAIL, "^" },
-    { 48, TR_SCAN_FAIL, "`" },
-    { 49, TR_SCAN_FAIL, "~" },
-    { 50, TR_SUCCESS, "(* this is a test of comments *) test = test, 'a'; (* comment *)" },
-    { 51, TR_SUCCESS, "other = ' ' | ':' | '+' | '_' | '%' | '@' | '&' | '#' | '$' | '<' | '>' | '\\' | '^' | '`' | '~';" },
-    { 52, TR_SUCCESS, "special = ? ISO 6429 character Horizontal Tabulation ?;" },
-    { 53, TR_SUCCESS, "newline = {? ISO 6429 character Carriage Return ?}, ? ISO 6429 character Line Feed ?, {? ISO 6429 character Carriage Return ?};" },
-    { 54, TR_PARSE_FAIL, "test = 'test';;" },   // double semicolon
-    { 55, TR_SUCCESS, "gapfreesymbol = terminalcharacter - (firstquotesymbol | secondquotesymbol) | terminalstring;" },
-    { 56, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule};" },
-    { 57, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule}; syntaxrule = metaidentifier, '=', definitionslist, ';';" },
-    { 58, TR_SUCCESS, "definitionslist = singledefinition, {definitionseparatorsymbol, singledefinition};" },
-    { 59, TR_SUCCESS, "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm}; concatenatesymbol = ',';" },
-    { 60, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
-    { 61, TR_SUCCESS, "empty = ;" },
-    { 62, TR_SUCCESS, "text = character, { character } | ;" },
-    { 63, TR_SUCCESS, "text = | character, { character };" },
-    { 64, TR_SUCCESS, "text = { character | };" },
+    { 32, 1, TR_SUCCESS, "vowel = 'A' | 'E' | 'I' | 'O' | 'U';" },
+    { 33, 1, TR_SUCCESS, "ee = {'A'} - , 'E';" },
+    { 34, 0, TR_SCAN_FAIL, "." },
+    { 35, 0, TR_SCAN_FAIL, ":" },
+    { 36, 0, TR_SCAN_FAIL, "!" },
+    { 37, 0, TR_SCAN_FAIL, "+" },
+    { 38, 0, TR_SCAN_FAIL, "%" },
+    { 39, 0, TR_SCAN_FAIL, "@" },
+    { 40, 0, TR_SCAN_FAIL, "&" },
+    { 41, 0, TR_SCAN_FAIL, "#" },
+    { 42, 0, TR_SCAN_FAIL, "$" },
+    { 43, 0, TR_SCAN_FAIL, "<" },
+    { 44, 0, TR_SCAN_FAIL, ">" },
+    { 45, 0, TR_SCAN_FAIL, "/" },
+    { 46, 0, TR_SCAN_FAIL, "\\" },
+    { 47, 0, TR_SCAN_FAIL, "^" },
+    { 48, 0, TR_SCAN_FAIL, "`" },
+    { 49, 0, TR_SCAN_FAIL, "~" },
+    { 50, 1, TR_SUCCESS, "(* this is a test of comments *) test = test, 'a'; (* comment *)" },
+    { 51, 1, TR_SUCCESS, "other = ' ' | ':' | '+' | '_' | '%' | '@' | '&' | '#' | '$' | '<' | '>' | '\\' | '^' | '`' | '~';" },
+    { 52, 1, TR_SUCCESS, "special = ? ISO 6429 character Horizontal Tabulation ?;" },
+    { 53, 1, TR_SUCCESS, "newline = {? ISO 6429 character Carriage Return ?}, ? ISO 6429 character Line Feed ?, {? ISO 6429 character Carriage Return ?};" },
+    { 54, 0, TR_PARSE_FAIL, "test = 'test';;" },   // double semicolon
+    { 55, 1, TR_SUCCESS, "gapfreesymbol = terminalcharacter - (firstquotesymbol | secondquotesymbol) | terminalstring;" },
+    { 56, 1, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule};" },
+    { 57, 2, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule}; syntaxrule = metaidentifier, '=', definitionslist, ';';" },
+    { 58, 1, TR_SUCCESS, "definitionslist = singledefinition, {definitionseparatorsymbol, singledefinition};" },
+    { 59, 2, TR_SUCCESS, "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm}; concatenatesymbol = ',';" },
+    { 60, 1, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
+    { 61, 1, TR_SUCCESS, "empty = ;" },
+    { 62, 1, TR_SUCCESS, "text = character, { character } | ;" },
+    { 63, 1, TR_SUCCESS, "text = | character, { character };" },
+    { 64, 1, TR_SUCCESS, "text = { character | };" },
 };
 
-TEST_RETURN just_do_it(const std::string& str)
+TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
 {
     using namespace EbnfParser;
 
@@ -113,6 +114,7 @@ TEST_RETURN just_do_it(const std::string& str)
     TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
     os << "input: " << str << std::endl;
+    num_rules = 0;
     if (stream.scan_tokens())
     {
         ret = TR_PARSE_FAIL;
@@ -128,6 +130,12 @@ TEST_RETURN just_do_it(const std::string& str)
             ast->to_dbg(os);
             os << "\n\nto_out:\n";
             ast->to_out(os);
+
+            if (ast->m_id == ASTID_SEQ)
+            {
+                SeqAst *seq = static_cast<SeqAst *>(ast);
+                num_rules = seq->size();
+            }
         }
         else
         {
@@ -146,16 +154,25 @@ TEST_RETURN just_do_it(const std::string& str)
 
 bool do_test_entry(const TEST_ENTRY *entry)
 {
-    int ret = just_do_it(entry->input);
+    bool failed = false;
+    size_t num_rules = 0;
+    int ret = just_do_it(entry->input, num_rules);
     if (ret != entry->ret)
     {
         printf("#%d: FAILED: expected %d, got %d\n", entry->entry_number, entry->ret, ret);
         ++g_failed;
-        ++g_executed;
-        return false;
+        failed = true;
     }
     ++g_executed;
-    return true;
+    if (num_rules != entry->num_rules)
+    {
+        printf("#%d: FAILED: expected %u, got %u\n",
+               entry->entry_number, (int)entry->num_rules, (int)num_rules);
+        ++g_failed;
+        failed = true;
+    }
+    ++g_executed;
+    return !failed;
 }
 
 int main(void)
