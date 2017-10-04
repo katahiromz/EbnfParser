@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_PARSER_HPP_
-#define EBNF_PARSER_HPP_        2   // Version 2
+#define EBNF_PARSER_HPP_        3   // Version 3
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -1405,7 +1405,7 @@ namespace EbnfParser
             ret = NULL;
             break;
         default:
-            ret = new EmptyAst();
+            ret = NULL;
             break;
         }
         return ret;
