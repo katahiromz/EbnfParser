@@ -111,7 +111,7 @@ TEST_RETURN just_do_it(const std::string& str)
 
     TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
-    os << str << std::endl;
+    os << "input: " << str << std::endl;
     if (stream.scan_tokens())
     {
         ret = TR_PARSE_FAIL;

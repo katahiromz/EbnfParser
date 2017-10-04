@@ -15,7 +15,7 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#if defined(NDEBUG) || 0
+#if defined(NDEBUG) || 1
     #define PRINT_FUNCTION()    /*empty*/
 #else
     #define PRINT_FUNCTION()    printf("%s\n", __func__);
