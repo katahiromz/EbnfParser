@@ -201,5 +201,5 @@ int main(void)
         printf("SUCCESS!\n");
 
     assert(EbnfParser::BaseAst::alive_count() == 0);
-    return 0;
+    return g_failed;
 }

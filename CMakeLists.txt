@@ -6,6 +6,9 @@
 # CMake minimum version
 cmake_minimum_required(VERSION 2.4)
 
+# enable CTest
+enable_testing()
+
 # use new policy
 cmake_policy(SET CMP0054 NEW)
 
@@ -41,6 +44,8 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 ##############################################################################
 
-add_executable(EbnfParser EbnfParserTest.cpp)
+add_executable(EbnfParserTest EbnfParserTest.cpp)
+
+add_test(NAME EbnfParserTest COMMAND EbnfParserTest)
 
 ##############################################################################
