@@ -98,6 +98,7 @@ static const TEST_ENTRY g_test_entries[] =
     { 60, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
     { 61, TR_SUCCESS, "empty = ;" },
     { 62, TR_SUCCESS, "text = character { character } | ;" },
+    { 62, TR_SUCCESS, "text = | character { character };" },
 };
 
 TEST_RETURN just_do_it(const std::string& str)
