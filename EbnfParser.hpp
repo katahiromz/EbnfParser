@@ -635,7 +635,6 @@ namespace EbnfParser
         BaseAst *visit_optional_sequence();
         BaseAst *visit_repeated_sequence();
         BaseAst *visit_grouped_sequence();
-        BaseAst *visit_special_sequence();
 
     protected:
         TokenStream m_stream;
@@ -1497,21 +1496,6 @@ namespace EbnfParser
         }
         next();
         ret = new UnaryAst("group", ret);
-        return ret;
-    }
-
-    // special_sequence = '?', {character - '?'}, '?';
-    // special_sequence is SpecialAst.
-    inline BaseAst *Parser::visit_special_sequence()
-    {
-        PRINT_FUNCTION();
-
-        SpecialAst *ret = NULL;
-        if (type() == TOK_SPECIAL)
-        {
-            ret = new SpecialAst(str());
-            next();
-        }
         return ret;
     }
 } // namespace EbnfParser
