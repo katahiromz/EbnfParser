@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_PARSER_HPP_
-#define EBNF_PARSER_HPP_        4   // Version 4
+#define EBNF_PARSER_HPP_        5   // Version 5
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -328,6 +328,7 @@ namespace EbnfParser
 
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_out(os_type& os) const = 0;
+        virtual BaseAst *clone() = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -349,6 +350,10 @@ namespace EbnfParser
         {
             os << m_name;
         }
+        virtual BaseAst *clone()
+        {
+            return new IdentAst(m_name);
+        }
     };
 
     struct IntegerAst : public BaseAst
@@ -365,6 +370,10 @@ namespace EbnfParser
         virtual void to_out(os_type& os) const
         {
             os << m_integer;
+        }
+        virtual BaseAst *clone()
+        {
+            return new IntegerAst(m_integer);
         }
     };
 
@@ -386,6 +395,10 @@ namespace EbnfParser
             else
                 os << "'" << m_str << "'";
         }
+        virtual BaseAst *clone()
+        {
+            return new StringAst(m_str);
+        }
     };
 
     struct SpecialAst : public BaseAst
@@ -402,6 +415,10 @@ namespace EbnfParser
         virtual void to_out(os_type& os) const
         {
             os << '?' << m_str << '?';
+        }
+        virtual BaseAst *clone()
+        {
+            return new SpecialAst(m_str);
         }
     };
 
@@ -451,6 +468,14 @@ namespace EbnfParser
                 return;
             }
         }
+        virtual BaseAst *clone()
+        {
+            if (m_arg)
+            {
+                return new UnaryAst(m_str, m_arg->clone());
+            }
+            return new UnaryAst(m_str);
+        }
     };
 
     struct BinaryAst : public BaseAst
@@ -462,8 +487,8 @@ namespace EbnfParser
         BinaryAst(const string_type& str, BaseAst *left, BaseAst *right)
             : BaseAst(ASTID_BINARY), m_str(str), m_left(left), m_right(right)
         {
-            assert(left);
-            assert(right);
+            assert(m_left);
+            assert(m_right);
         }
         ~BinaryAst()
         {
@@ -503,6 +528,10 @@ namespace EbnfParser
                 return;
             }
         }
+        virtual BaseAst *clone()
+        {
+            return new BinaryAst(m_str, m_left->clone(), m_right->clone());
+        }
     };
 
     struct SeqAst : public BaseAst
@@ -519,6 +548,13 @@ namespace EbnfParser
             assert(ast);
             m_vec.push_back(ast);
         }
+        ~SeqAst()
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                delete m_vec[i];
+            }
+        }
         void push_back(BaseAst *ast)
         {
             assert(ast);
@@ -528,12 +564,14 @@ namespace EbnfParser
         {
             return m_vec.size();
         }
-        ~SeqAst()
+        virtual BaseAst *clone()
         {
+            SeqAst *ast = new SeqAst(m_str);
             for (size_t i = 0; i < m_vec.size(); ++i)
             {
-                delete m_vec[i];
+                ast->push_back(m_vec[i]->clone());
             }
+            return ast;
         }
         virtual void to_dbg(os_type& os) const
         {
@@ -599,6 +637,10 @@ namespace EbnfParser
         }
         virtual void to_out(os_type& os) const
         {
+        }
+        virtual BaseAst *clone()
+        {
+            return new EmptyAst();
         }
     };
 
