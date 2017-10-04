@@ -1,4 +1,4 @@
-// EbnfParser.hpp --- EBNF parser
+// EbnfParser.hpp --- ISO EBNF parser
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_PARSER_HPP_
@@ -14,14 +14,14 @@
 
 /////////////////////////////////////////////////////////////////////////
 
-#if defined(NDEBUG) || 1
+#if defined(NDEBUG) || 0
     #define PRINT_FUNCTION()    /*empty*/
 #else
     #define PRINT_FUNCTION()    printf("%s\n", __func__);
 #endif
 
 /////////////////////////////////////////////////////////////////////////
-// EBNF parser
+// ISO EBNF parser
 
 #define STRICT_EBNF     // ISO/IEC 14977 : 1996(E)
 
@@ -249,25 +249,25 @@ namespace EbnfParser
             return m_tokens[i];
         }
 
-        void scan_error(const char *msg, size_t line)
+        void scan_error(const string_type& msg, size_t line)
         {
             AuxInfo info;
             info.m_line = line;
             info.m_text = msg;
             m_errors.push_back(info);
         }
-        void scan_error(const char *msg)
+        void scan_error(const string_type& msg)
         {
             scan_error(msg, get_line());
         }
-        void scan_warning(const char *msg, size_t line)
+        void scan_warning(const string_type& msg, size_t line)
         {
             AuxInfo info;
             info.m_line = line;
             info.m_text = msg;
             m_warnings.push_back(info);
         }
-        void scan_warning(const char *msg)
+        void scan_warning(const string_type& msg)
         {
             scan_warning(msg, get_line());
         }
@@ -681,19 +681,19 @@ namespace EbnfParser
         {
             return m_stream.token().m_line;
         }
-        void parse_error(const char *msg, size_t line)
+        void parse_error(const string_type& msg, size_t line)
         {
             m_stream.scan_error(msg, line);
         }
-        void parse_error(const char *msg)
+        void parse_error(const string_type& msg)
         {
             parse_error(msg, get_line());
         }
-        void parse_warning(const char *msg, size_t line)
+        void parse_warning(const string_type& msg, size_t line)
         {
             m_stream.scan_warning(msg, line);
         }
-        void parse_warning(const char *msg)
+        void parse_warning(const string_type& msg)
         {
             parse_warning(msg, get_line());
         }
@@ -814,9 +814,6 @@ namespace EbnfParser
     {
         m_tokens.clear();
 
-        printf("scan_tokens\n");
-        fflush(stdout);
-
         char ch;
         string_type str;
         for (;;)
@@ -826,8 +823,6 @@ namespace EbnfParser
             {
                 ch = getch();
             } while (is_space(ch));
-
-            fflush(stdout);
 
             if (is_digit(ch))
             {
@@ -903,6 +898,8 @@ namespace EbnfParser
                     scan_error("no end of comment", line);
                     return false;
                 }
+                ungetch();
+                ch = '(';   // )
             }
 
             if (ch == '?')
@@ -935,7 +932,7 @@ namespace EbnfParser
             }
 
             // invalid character
-            scan_error("invalid character");
+            scan_error(std::string("invalid character: ") + ch);
             break;
         }
 
@@ -1226,7 +1223,7 @@ namespace EbnfParser
         }
         if (type() != TOK_SYMBOL || str() != ";")
         {
-            parse_error("expected ';'");
+            parse_error("expected ';' or ','");
             delete id;
             delete def_list;
             return NULL;
@@ -1386,19 +1383,16 @@ namespace EbnfParser
         case TOK_SYMBOL:
             if (str() == "[")   // ]
             {
-                next();
                 ret = visit_optional_sequence();
                 break;
             }
             if (str() == "{")   // }
             {
-                next();
                 ret = visit_repeated_sequence();
                 break;
             }
             if (str() == "(")   // )
             {
-                next();
                 ret = visit_grouped_sequence();
                 break;
             }
