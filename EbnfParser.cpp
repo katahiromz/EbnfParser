@@ -46,6 +46,8 @@ static const TEST_ENTRY g_test_entries[] =
     { 21, TR_PARSE_FAIL,    "z" },    // invalid syntax
     { 22, TR_SCAN_FAIL,     "@@" },    // invalid character
     { 23, TR_SCAN_FAIL,     "!" },    // invalid character
+    { 24, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
+    { 25, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
 };
 
 TestReturn just_do_it(const std::string& str)
