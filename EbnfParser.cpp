@@ -55,7 +55,8 @@ static const TEST_ENTRY g_test_entries[] =
     { 26, 0, TR_SCAN_FAIL,     "(*not-terminated" },    // invalid comment // *)
     { 27, 1, TR_SUCCESS,       "xx = \"A\" - xx;" },
     { 28, 1, TR_SUCCESS,       "line = 5 * \" \", (character - (\" \" | \"0\")), 66 * [character];" },
-    { 29, 1, TR_SUCCESS,       "line = character - \"C\", 4 * character, character - (\" \" | \"0\"), 66 * [character];" },
+    { 29, 1, TR_SUCCESS,
+        "line = character - \"C\", 4 * character, character - (\" \" | \"0\"), 66 * [character];" },
     { 30, 7, TR_SUCCESS,
         "aa = \"A\";\n"
         "bb = 3 * aa, \"B\";\n"
@@ -87,16 +88,28 @@ static const TEST_ENTRY g_test_entries[] =
     { 48, 0, TR_SCAN_FAIL, "`" },
     { 49, 0, TR_SCAN_FAIL, "~" },
     { 50, 1, TR_SUCCESS, "(* this is a test of comments *) test = test, 'a'; (* comment *)" },
-    { 51, 1, TR_SUCCESS, "other = ' ' | ':' | '+' | '_' | '%' | '@' | '&' | '#' | '$' | '<' | '>' | '\\' | '^' | '`' | '~';" },
+    { 51, 1, TR_SUCCESS,
+        "other = ' ' | ':' | '+' | '_' | '%' | '@' | '&' | '#' | '$' | "
+        "'<' | '>' | '\\' | '^' | '`' | '~';" },
     { 52, 1, TR_SUCCESS, "special = ? ISO 6429 character Horizontal Tabulation ?;" },
-    { 53, 1, TR_SUCCESS, "newline = {? ISO 6429 character Carriage Return ?}, ? ISO 6429 character Line Feed ?, {? ISO 6429 character Carriage Return ?};" },
+    { 53, 1, TR_SUCCESS,
+        "newline = {? ISO 6429 character Carriage Return ?}, "
+        "? ISO 6429 character Line Feed ?, {? ISO 6429 character Carriage Return ?};" },
     { 54, 0, TR_PARSE_FAIL, "test = 'test';;" },   // double semicolon
-    { 55, 1, TR_SUCCESS, "gapfreesymbol = terminalcharacter - (firstquotesymbol | secondquotesymbol) | terminalstring;" },
+    { 55, 1, TR_SUCCESS,
+        "gapfreesymbol = terminalcharacter - (firstquotesymbol | secondquotesymbol) | terminalstring;" },
     { 56, 1, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule};" },
-    { 57, 2, TR_SUCCESS, "syntax = syntaxrule, {syntaxrule}; syntaxrule = metaidentifier, '=', definitionslist, ';';" },
-    { 58, 1, TR_SUCCESS, "definitionslist = singledefinition, {definitionseparatorsymbol, singledefinition};" },
-    { 59, 2, TR_SUCCESS, "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm}; concatenatesymbol = ',';" },
-    { 60, 1, TR_SUCCESS, "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
+    { 57, 2, TR_SUCCESS,
+        "syntax = syntaxrule, {syntaxrule};\r\n"
+        "syntaxrule = metaidentifier, '=', definitionslist, ';';" },
+    { 58, 1, TR_SUCCESS,
+        "definitionslist = singledefinition, {definitionseparatorsymbol, singledefinition};" },
+    { 59, 2, TR_SUCCESS,
+        "(*singledefinition *) singledefinition = syntacticterm, {concatenatesymbol, syntacticterm};\n"
+        "concatenatesymbol = ',';" },
+    { 60, 1, TR_SUCCESS,
+        "comment = '(*', {commentsymbol}, '*)' (* A comment is allowed anywhere "
+        "outside a <terminal string>, <meta identifier>, <integer> or <special sequence> *);" },
     { 61, 1, TR_SUCCESS, "empty = ;" },
     { 62, 1, TR_SUCCESS, "text = character, { character } | ;" },
     { 63, 1, TR_SUCCESS, "text = | character, { character };" },
