@@ -2,8 +2,8 @@ a.txt
 a.exe
 *.o
 *.obj
-EbnfParser
-EbnfParser.exe
+EbnfParserTest
+EbnfParserTest.exe
 *.res
 *.tds
 Debug
