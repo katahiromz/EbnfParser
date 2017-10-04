@@ -23,8 +23,10 @@ enum TestReturn
 
 static const TEST_ENTRY g_test_entries[] =
 {
+#ifdef ISO_EBNF
     { 1, TR_SCAN_FAIL,      "list = '';" }, // empty string
     { 2, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
+#endif
     { 3, TR_SUCCESS,        "list = \"a\";" },
     { 4, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
     { 5, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list, list" },  // semicolon needed
@@ -48,6 +50,9 @@ static const TEST_ENTRY g_test_entries[] =
     { 23, TR_SCAN_FAIL,     "!" },    // invalid character
     { 24, TR_SCAN_FAIL,     "\"not-terminated" },    // invalid string
     { 25, TR_SCAN_FAIL,     "\'not-terminated" },    // invalid string
+#ifdef ISO_EBNF
+    { 26, TR_SCAN_FAIL,     "underline_not_acceptable" },    // invalid identifier
+#endif
 };
 
 TestReturn just_do_it(const std::string& str)

@@ -23,7 +23,7 @@
 /////////////////////////////////////////////////////////////////////////
 // ISO EBNF parser
 
-#define STRICT_EBNF     // ISO/IEC 14977 : 1996(E)
+#define ISO_EBNF     // ISO/IEC 14977 : 1996(E)
 
 namespace EbnfParser
 {
@@ -853,7 +853,7 @@ namespace EbnfParser
                 return false;
             }
 
-#ifdef STRICT_EBNF
+#ifdef ISO_EBNF
             if (is_alpha(ch))
 #else
             if (is_alpha(ch) || ch == '_')
@@ -1008,7 +1008,7 @@ namespace EbnfParser
         ret.clear();
 
         char ch = *peek();
-#ifdef STRICT_EBNF
+#ifdef ISO_EBNF
         if (!is_alpha(ch))
 #else
         if (!is_alpha(ch) && ch != '_')
@@ -1022,7 +1022,7 @@ namespace EbnfParser
             ch = getch();
             if (ch == -1)
                 break;
-#ifdef STRICT_EBNF
+#ifdef ISO_EBNF
             if (!is_alnum(ch))
 #else
             if (!is_alnum(ch) && ch != '_')
@@ -1081,7 +1081,7 @@ namespace EbnfParser
         }
         const char first_ch = ch;
 
-#ifdef STRICT_EBNF
+#ifdef ISO_EBNF
         ch = getch();
         if (ch == first_ch)
         {
