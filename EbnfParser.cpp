@@ -26,7 +26,7 @@ static const TEST_ENTRY g_test_entries[] =
 #ifdef ISO_EBNF
     { 1, TR_SCAN_FAIL,      "list = '';" }, // empty string
     { 2, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
-    { 3, TR_SCAN_FAIL,      "underline_not_acceptable" },    // invalid identifier
+    { 3, TR_SCAN_FAIL,      "underline_not_allowed" },    // invalid identifier
 #endif
     { 4, TR_SUCCESS,        "list = \"a\";" },
     { 5, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list list;" },  // comma needed
