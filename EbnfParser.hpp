@@ -1397,7 +1397,8 @@ namespace EbnfParser
                 ret = visit_grouped_sequence();
                 break;
             }
-            if (str() == ";" || str() == "|" || str() == ",")
+            if (str() == ";" || str() == "|" || str() == "," ||
+                str() == ")" || str() == "}" || str() == "]")
             {
                 ret = new EmptyAst();
                 break;

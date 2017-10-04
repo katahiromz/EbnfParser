@@ -99,6 +99,7 @@ static const TEST_ENTRY g_test_entries[] =
     { 61, TR_SUCCESS, "empty = ;" },
     { 62, TR_SUCCESS, "text = character, { character } | ;" },
     { 63, TR_SUCCESS, "text = | character, { character };" },
+    { 64, TR_SUCCESS, "text = { character | };" },
 };
 
 TEST_RETURN just_do_it(const std::string& str)
