@@ -39,14 +39,6 @@ set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
-# Win32 or not?
-if (NOT CMAKE_HOST_WIN32)
-    message(FATAL_ERROR "You must use a Win32 compiler")
-endif()
-
-# enable Win32 resource
-ENABLE_LANGUAGE(RC)
-
 ##############################################################################
 
 add_executable(EbnfParser EbnfParser.cpp)
