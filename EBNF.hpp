@@ -599,6 +599,10 @@ namespace EBNF
         {
             return m_vec.size();
         }
+        bool empty() const
+        {
+            return size() == 0;
+        }
         virtual BaseAst *clone() const
         {
             SeqAst *ast = new SeqAst(m_str);
@@ -1608,6 +1612,7 @@ namespace EBNF
     }
 
     /////////////////////////////////////////////////////////////////////////
+    // comparison
 
     inline bool ast_equal(BaseAst *ast1, BaseAst *ast2)
     {
