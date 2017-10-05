@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_HPP_
-#define EBNF_HPP_   7   // Version 7
+#define EBNF_HPP_   8   // Version 8
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -1656,8 +1656,8 @@ namespace EBNF
                     return false;
                 if (s1->size() != s2->size())
                     return false;
-                s1 = s1->sorted_clone();
-                s2 = s2->sorted_clone();
+                s1 = static_cast<SeqAst *>(s1->sorted_clone());
+                s2 = static_cast<SeqAst *>(s2->sorted_clone());
                 for (size_t i = 0; i < s1->size(); ++i)
                 {
                     if (!ast_equal(s1->m_vec[i], s2->m_vec[i]))
@@ -1747,8 +1747,8 @@ namespace EBNF
                 else
                     count = s2->size();
 
-                s1 = s1->sorted_clone();
-                s2 = s2->sorted_clone();
+                s1 = static_cast<SeqAst *>(s1->sorted_clone());
+                s2 = static_cast<SeqAst *>(s2->sorted_clone());
                 for (size_t i = 0; i < count; ++i)
                 {
                     if (!ast_less_than(s1->m_vec[i], s2->m_vec[i]))
