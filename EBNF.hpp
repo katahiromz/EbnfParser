@@ -334,6 +334,7 @@ namespace EBNF
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_out(os_type& os) const = 0;
         virtual BaseAst *clone() const = 0;
+        virtual bool has_meta_identifier() const = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -359,6 +360,10 @@ namespace EBNF
         {
             return new IdentAst(m_name);
         }
+        virtual bool has_meta_identifier() const
+        {
+            return true;
+        }
     };
 
     struct IntegerAst : public BaseAst
@@ -379,6 +384,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new IntegerAst(m_integer);
+        }
+        virtual bool has_meta_identifier() const
+        {
+            return false;
         }
     };
 
@@ -404,6 +413,10 @@ namespace EBNF
         {
             return new StringAst(m_str);
         }
+        virtual bool has_meta_identifier() const
+        {
+            return false;
+        }
     };
 
     struct SpecialAst : public BaseAst
@@ -424,6 +437,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new SpecialAst(m_str);
+        }
+        virtual bool has_meta_identifier() const
+        {
+            return false;
         }
     };
 
@@ -481,6 +498,10 @@ namespace EBNF
             }
             return new UnaryAst(m_str);
         }
+        virtual bool has_meta_identifier() const
+        {
+            return m_arg && m_arg->has_meta_identifier();
+        }
     };
 
     struct BinaryAst : public BaseAst
@@ -536,6 +557,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new BinaryAst(m_str, m_left->clone(), m_right->clone());
+        }
+        virtual bool has_meta_identifier() const
+        {
+            return m_left->has_meta_identifier() || m_right->has_meta_identifier();
         }
     };
 
@@ -629,6 +654,15 @@ namespace EBNF
                 return;
             }
         }
+        virtual bool has_meta_identifier() const
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                if (m_vec[i]->has_meta_identifier())
+                    return true;
+            }
+            return false;
+        }
     };
 
     struct EmptyAst : public BaseAst
@@ -646,6 +680,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new EmptyAst();
+        }
+        virtual bool has_meta_identifier() const
+        {
+            return false;
         }
     };
 
@@ -1375,12 +1413,19 @@ namespace EBNF
     }
 
     // exception = factor;
-    // exception is factor.
+    // exception is factor without meta identifier.
     inline BaseAst *Parser::visit_exception()
     {
         PRINT_FUNCTION();
 
-        return visit_factor();
+        BaseAst *ast = visit_factor();
+        if (ast->has_meta_identifier())
+        {
+            parse_error("exception has meta identifier");
+            delete ast;
+            ast = NULL;
+        }
+        return ast;
     }
 
     // factor = [integer, '*'], primary;
