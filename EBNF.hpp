@@ -1758,9 +1758,10 @@ namespace EBNF
                         return false;
                     }
                 }
+                bool less_than = s1->size() < s2->size();
                 delete s1;
                 delete s2;
-                return s1->size() < s2->size();
+                return less_than;
             }
         case ASTID_SPECIAL:
             {
