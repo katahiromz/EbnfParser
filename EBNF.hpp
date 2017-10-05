@@ -342,6 +342,7 @@ namespace EBNF
         BaseAst& operator=(const BaseAst&);
     };
 
+    // comparison
     bool ast_equal(BaseAst *ast1, BaseAst *ast2);
     bool ast_less_than(BaseAst *ast1, BaseAst *ast2);
 
