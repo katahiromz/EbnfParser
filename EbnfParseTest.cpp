@@ -114,7 +114,8 @@ static const PARSE_TEST_ENTRY g_test_entries[] =
     { 52, 1, TR_SUCCESS, "text = { character | };" },
 };
 
-PARSE_TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
+static PARSE_TEST_RETURN
+just_do_it(const std::string& str, size_t& num_rules)
 {
     using namespace EBNF;
 
@@ -163,7 +164,7 @@ PARSE_TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
     return ret;
 }
 
-bool do_test_entry(const PARSE_TEST_ENTRY *entry)
+static bool do_test_entry(const PARSE_TEST_ENTRY *entry)
 {
     bool failed = false;
     size_t num_rules = 0;

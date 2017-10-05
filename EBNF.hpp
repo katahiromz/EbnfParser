@@ -713,6 +713,13 @@ namespace EBNF
             return m_ast;
         }
 
+        BaseAst *detach()
+        {
+            BaseAst *ast = m_ast;
+            m_ast = NULL;
+            return ast;
+        }
+
         bool parse();
 
         void err_out(os_type& os) const
@@ -1714,8 +1721,11 @@ namespace EBNF
                     return true;
                 if (b1->m_str > b2->m_str)
                     return false;
-                return ast_less_than(b1->m_left, b2->m_left) ||
-                       ast_less_than(b1->m_right, b2->m_right);
+                if (ast_less_than(b1->m_left, b2->m_left))
+                    return true;
+                if (!ast_equal(b1->m_left, b2->m_left))
+                    return false;
+                return ast_less_than(b1->m_right, b2->m_right);
             }
         case ASTID_IDENT:
             {
@@ -1754,14 +1764,19 @@ namespace EBNF
 
                 s1 = static_cast<SeqAst *>(s1->sorted_clone());
                 s2 = static_cast<SeqAst *>(s2->sorted_clone());
+
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if (!ast_equal(s1->m_vec[i], s2->m_vec[i]) &&
-                        !ast_less_than(s1->m_vec[i], s2->m_vec[i]))
+                    if (ast_equal(s1->m_vec[i], s2->m_vec[i]))
                     {
+                        continue;
+                    }
+                    else 
+                    {
+                        bool ret = ast_less_than(s1->m_vec[i], s2->m_vec[i]);
                         delete s1;
                         delete s2;
-                        return false;
+                        return ret;
                     }
                 }
                 bool less_than = s1->size() < s2->size();

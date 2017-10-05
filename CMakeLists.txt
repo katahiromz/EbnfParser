@@ -45,7 +45,9 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 ##############################################################################
 
 add_executable(EbnfParseTest EbnfParseTest.cpp)
+add_executable(EbnfCompareTest EbnfCompareTest.cpp)
 
 add_test(NAME EbnfParseTest COMMAND EbnfParseTest)
+add_test(NAME EbnfCompareTest COMMAND EbnfCompareTest)
 
 ##############################################################################
