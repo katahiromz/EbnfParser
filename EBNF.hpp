@@ -12,6 +12,7 @@
 #include <sstream>      // for std::stringstream
 #include <cassert>      // for assert macro
 #include <cstring>      // for std::strlen, std::strtol, ...
+#include <algorithm>    // for std::sort
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -296,13 +297,13 @@ namespace EBNF
 
     enum AstID
     {
-        ASTID_BINARY,
-        ASTID_IDENT,
         ASTID_INTEGER,
         ASTID_STRING,
-        ASTID_SPECIAL,
+        ASTID_BINARY,
+        ASTID_IDENT,
         ASTID_UNARY,
         ASTID_SEQ,
+        ASTID_SPECIAL,
         ASTID_EMPTY
     };
 
@@ -334,11 +335,15 @@ namespace EBNF
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_out(os_type& os) const = 0;
         virtual BaseAst *clone() const = 0;
+        virtual BaseAst *sorted_clone() const = 0;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
         BaseAst& operator=(const BaseAst&);
     };
+
+    bool ast_equal(BaseAst *ast1, BaseAst *ast2);
+    bool ast_less_than(BaseAst *ast1, BaseAst *ast2);
 
     struct IdentAst : public BaseAst
     {
@@ -358,6 +363,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new IdentAst(m_name);
+        }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
         }
     };
 
@@ -379,6 +388,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new IntegerAst(m_integer);
+        }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
         }
     };
 
@@ -404,6 +417,10 @@ namespace EBNF
         {
             return new StringAst(m_str);
         }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
+        }
     };
 
     struct SpecialAst : public BaseAst
@@ -424,6 +441,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new SpecialAst(m_str);
+        }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
         }
     };
 
@@ -481,6 +502,10 @@ namespace EBNF
             }
             return new UnaryAst(m_str);
         }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
+        }
     };
 
     struct BinaryAst : public BaseAst
@@ -537,6 +562,10 @@ namespace EBNF
         {
             return new BinaryAst(m_str, m_left->clone(), m_right->clone());
         }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
+        }
     };
 
     struct SeqAst : public BaseAst
@@ -576,6 +605,17 @@ namespace EBNF
             {
                 ast->push_back(m_vec[i]->clone());
             }
+            return ast;
+        }
+        virtual BaseAst *sorted_clone() const
+        {
+            SeqAst *ast = new SeqAst(m_str);
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                BaseAst *cloned = m_vec[i]->sorted_clone();
+                ast->push_back(cloned);
+            }
+            std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
             return ast;
         }
         virtual void to_dbg(os_type& os) const
@@ -646,6 +686,10 @@ namespace EBNF
         virtual BaseAst *clone() const
         {
             return new EmptyAst();
+        }
+        virtual BaseAst *sorted_clone() const
+        {
+            return clone();
         }
     };
 
@@ -1553,6 +1597,180 @@ namespace EBNF
         next();
         ret = new UnaryAst("group", ret);
         return ret;
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+
+    inline bool ast_equal(BaseAst *ast1, BaseAst *ast2)
+    {
+        assert(ast1);
+        assert(ast2);
+
+        if (ast1->m_id != ast2->m_id)
+            return false;
+
+        switch (ast1->m_id)
+        {
+        case ASTID_INTEGER:
+            {
+                IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
+                IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
+                return i1->m_integer == i2->m_integer;
+            }
+        case ASTID_STRING:
+            {
+                StringAst *s1 = static_cast<StringAst *>(ast1);
+                StringAst *s2 = static_cast<StringAst *>(ast2);
+                return s1->m_str == s2->m_str;
+            }
+        case ASTID_BINARY:
+            {
+                BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
+                BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
+                if (b1->m_str != b2->m_str)
+                    return false;
+                return ast_equal(b1->m_left, b2->m_left) &&
+                       ast_equal(b1->m_right, b2->m_right);
+            }
+        case ASTID_IDENT:
+            {
+                IdentAst *i1 = static_cast<IdentAst *>(ast1);
+                IdentAst *i2 = static_cast<IdentAst *>(ast2);
+                return i1->m_name == i2->m_name;
+            }
+        case ASTID_UNARY:
+            {
+                UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
+                UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
+                if (u1->m_str != u2->m_str)
+                    return false;
+                if (!u1->m_arg != !u2->m_arg)
+                    return false;
+                return ast_equal(u1->m_arg, u2->m_arg);
+            }
+        case ASTID_SEQ:
+            {
+                SeqAst *s1 = static_cast<SeqAst *>(ast1);
+                SeqAst *s2 = static_cast<SeqAst *>(ast2);
+                if (s1->m_str != s2->m_str)
+                    return false;
+                if (s1->size() != s2->size())
+                    return false;
+                s1 = s1->sorted_clone();
+                s2 = s2->sorted_clone();
+                for (size_t i = 0; i < s1->size(); ++i)
+                {
+                    if (!ast_equal(s1->m_vec[i], s2->m_vec[i]))
+                    {
+                        delete s1;
+                        delete s2;
+                        return false;
+                    }
+                }
+                delete s1;
+                delete s2;
+                return true;
+            }
+        case ASTID_SPECIAL:
+            {
+                SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
+                SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
+                return spe1->m_str == spe2->m_str;
+            }
+        case ASTID_EMPTY:
+            return true;
+        }
+    }
+    inline bool ast_less_than(BaseAst *ast1, BaseAst *ast2)
+    {
+        assert(ast1);
+        assert(ast2);
+
+        if (ast1->m_id < ast2->m_id)
+            return true;
+        if (ast1->m_id > ast2->m_id)
+            return false;
+
+        switch (ast1->m_id)
+        {
+        case ASTID_INTEGER:
+            {
+                IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
+                IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
+                return i1->m_integer < i2->m_integer;
+            }
+        case ASTID_STRING:
+            {
+                StringAst *s1 = static_cast<StringAst *>(ast1);
+                StringAst *s2 = static_cast<StringAst *>(ast2);
+                return s1->m_str < s2->m_str;
+            }
+        case ASTID_BINARY:
+            {
+                BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
+                BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
+                if (b1->m_str < b2->m_str)
+                    return true;
+                if (b1->m_str > b2->m_str)
+                    return false;
+                return ast_less_than(b1->m_left, b2->m_left) &&
+                       ast_less_than(b1->m_right, b2->m_right);
+            }
+        case ASTID_IDENT:
+            {
+                IdentAst *i1 = static_cast<IdentAst *>(ast1);
+                IdentAst *i2 = static_cast<IdentAst *>(ast2);
+                return i1->m_name < i2->m_name;
+            }
+        case ASTID_UNARY:
+            {
+                UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
+                UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
+                if (u1->m_str > u2->m_str)
+                    return false;
+                if (!u1->m_arg > !u2->m_arg)
+                    return false;
+                return ast_less_than(u1->m_arg, u2->m_arg);
+            }
+        case ASTID_SEQ:
+            {
+                SeqAst *s1 = static_cast<SeqAst *>(ast1);
+                SeqAst *s2 = static_cast<SeqAst *>(ast2);
+                if (s1->m_str < s2->m_str)
+                    return true;
+                if (s1->m_str > s2->m_str)
+                    return false;
+
+                size_t count;
+                if (s1->size() < s2->size())
+                    count = s1->size();
+                else
+                    count = s2->size();
+
+                s1 = s1->sorted_clone();
+                s2 = s2->sorted_clone();
+                for (size_t i = 0; i < count; ++i)
+                {
+                    if (!ast_less_than(s1->m_vec[i], s2->m_vec[i]))
+                    {
+                        delete s1;
+                        delete s2;
+                        return false;
+                    }
+                }
+                delete s1;
+                delete s2;
+                return s1->size() < s2->size();
+            }
+        case ASTID_SPECIAL:
+            {
+                SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
+                SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
+                return spe1->m_str < spe2->m_str;
+            }
+        case ASTID_EMPTY:
+            return false;
+        }
     }
 } // namespace EBNF
 
