@@ -1713,7 +1713,7 @@ namespace EBNF
                     return true;
                 if (b1->m_str > b2->m_str)
                     return false;
-                return ast_less_than(b1->m_left, b2->m_left) &&
+                return ast_less_than(b1->m_left, b2->m_left) ||
                        ast_less_than(b1->m_right, b2->m_right);
             }
         case ASTID_IDENT:
