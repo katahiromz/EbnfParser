@@ -1,9 +1,9 @@
-// EbnfParser.hpp --- ISO EBNF parser
+// EBNF.hpp --- ISO EBNF manipulator
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
-#ifndef EBNF_PARSER_HPP_
-#define EBNF_PARSER_HPP_        6   // Version 6
+#ifndef EBNF_HPP_
+#define EBNF_HPP_   7   // Version 7
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -22,14 +22,17 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////////
-// ISO EBNF parser
+// ISO EBNF manipulator
 
 #define ISO_EBNF     // ISO/IEC 14977 : 1996(E)
 
-namespace EbnfParser
+namespace EBNF
 {
     typedef std::string         string_type;
     typedef std::stringstream   os_type;
+
+    /////////////////////////////////////////////////////////////////////////
+    // character classification
 
     inline bool is_digit(char ch)
     {
@@ -897,11 +900,7 @@ namespace EbnfParser
                 return false;
             }
 
-#ifdef ISO_EBNF
             if (is_alpha(ch))
-#else
-            if (is_alpha(ch) || ch == '_')
-#endif
             {
                 // meta_identifier
                 ungetch();
@@ -1067,11 +1066,7 @@ namespace EbnfParser
         ret.clear();
 
         char ch = *peek();
-#ifdef ISO_EBNF
         if (!is_alpha(ch))
-#else
-        if (!is_alpha(ch) && ch != '_')
-#endif
             return false;
 
         ch = getch();
@@ -1081,11 +1076,7 @@ namespace EbnfParser
             ch = getch();
             if (ch == -1)
                 break;
-#ifdef ISO_EBNF
             if (!is_alnum(ch))
-#else
-            if (!is_alnum(ch) && ch != '_')
-#endif
             {
                 ungetch();
                 break;
@@ -1562,8 +1553,8 @@ namespace EbnfParser
         ret = new UnaryAst("group", ret);
         return ret;
     }
-} // namespace EbnfParser
+} // namespace EBNF
 
 /////////////////////////////////////////////////////////////////////////
 
-#endif  // ndef EBNF_PARSER_HPP_
+#endif  // ndef EBNF_HPP_

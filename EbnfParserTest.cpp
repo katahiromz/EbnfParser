@@ -2,7 +2,7 @@
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
-#include "EbnfParser.hpp"
+#include "EBNF.hpp"
 #include <cstdio>       // for std::puts
 
 int g_num_executions = 0;       // number of test executions
@@ -28,8 +28,8 @@ static const TEST_ENTRY g_test_entries[] =
 #ifdef ISO_EBNF
     { 1, 0, TR_SCAN_FAIL,      "list = '';" }, // empty string
     { 2, 0, TR_SCAN_FAIL,      "list = \"\";" }, // empty string
-    { 3, 0, TR_SCAN_FAIL,      "underline_not_allowed" },    // invalid identifier
 #endif
+    { 3, 0, TR_SCAN_FAIL,      "underline_not_allowed" },    // invalid identifier
     { 4, 1, TR_SUCCESS,        "list = \"a\";" },
     { 5, 0, TR_PARSE_FAIL,     "list = \"a\"; arg = list | list, list" },  // semicolon needed
     { 6, 2, TR_SUCCESS,        "list = \"a\"; arg = list | list, list;" },
@@ -116,7 +116,7 @@ static const TEST_ENTRY g_test_entries[] =
 
 TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
 {
-    using namespace EbnfParser;
+    using namespace EBNF;
 
     StringScanner scanner(str);
 
@@ -198,6 +198,6 @@ int main(void)
     if (g_num_failures == 0)
         printf("SUCCESS!\n");
 
-    assert(EbnfParser::BaseAst::alive_count() == 0);
+    assert(EBNF::BaseAst::alive_count() == 0);
     return g_num_failures;
 }
