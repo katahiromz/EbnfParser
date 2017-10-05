@@ -1727,9 +1727,13 @@ namespace EBNF
             {
                 UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
                 UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
+                if (u1->m_str < u2->m_str)
+                    return true;
                 if (u1->m_str > u2->m_str)
                     return false;
-                if (!u1->m_arg > !u2->m_arg)
+                if (!!u1->m_arg < !!u2->m_arg)
+                    return true;
+                if (!!u1->m_arg > !!u2->m_arg)
                     return false;
                 return ast_less_than(u1->m_arg, u2->m_arg);
             }
