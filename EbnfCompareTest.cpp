@@ -31,6 +31,10 @@ static const COMPARE_TEST_ENTRY g_test_entries[] =
     { 3, TR_LESS_THAN, "a = a;", "b = a;" },
     { 4, TR_EQUAL, "a = a | b;", "a = b | a;" },
     { 5, TR_EQUAL, "a = a | b | c;", "a = c | b | a;" },
+    { 6, TR_GREATER_THAN, "a = a | b | c;", "a = b | b | a;" },
+    { 7, TR_LESS_THAN, "a = a | b | b;", "a = c | b | a;" },
+    { 8, TR_GREATER_THAN, "a = a;", "a = 'a';" },
+    { 9, TR_LESS_THAN, "test = a;", "test1 = a;" },
 };
 
 static EBNF::SeqAst *do_parse(const std::string& str)
@@ -47,7 +51,7 @@ static EBNF::SeqAst *do_parse(const std::string& str)
         if (parser.parse())
         {
             BaseAst *ast = parser.detach();
-            if (ast && ast->m_id == ASTID_SEQ)
+            if (ast && ast->m_atype == ATYPE_SEQ)
             {
                 SeqAst *seq = static_cast<SeqAst *>(ast);
                 return seq;

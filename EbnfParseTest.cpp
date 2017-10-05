@@ -143,7 +143,7 @@ just_do_it(const std::string& str, size_t& num_rules)
             os << "\n\nto_out:\n";
             ast->to_out(os);
 
-            if (ast->m_id == ASTID_SEQ)
+            if (ast->m_atype == ATYPE_SEQ)
             {
                 SeqAst *seq = static_cast<SeqAst *>(ast);
                 num_rules = seq->size();

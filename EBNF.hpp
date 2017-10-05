@@ -295,21 +295,21 @@ namespace EBNF
     /////////////////////////////////////////////////////////////////////////
     // AST
 
-    enum AstID
+    enum AstType
     {
-        ASTID_INTEGER,
-        ASTID_STRING,
-        ASTID_BINARY,
-        ASTID_IDENT,
-        ASTID_UNARY,
-        ASTID_SEQ,
-        ASTID_SPECIAL,
-        ASTID_EMPTY
+        ATYPE_INTEGER,
+        ATYPE_STRING,
+        ATYPE_BINARY,
+        ATYPE_IDENT,
+        ATYPE_UNARY,
+        ATYPE_SEQ,
+        ATYPE_SPECIAL,
+        ATYPE_EMPTY
     };
 
     struct BaseAst
     {
-        AstID m_id;
+        AstType m_atype;
 
 #ifndef NDEBUG
         static int& alive_count()
@@ -319,7 +319,7 @@ namespace EBNF
         }
 #endif
 
-        BaseAst(AstID id) : m_id(id)
+        BaseAst(AstType atype) : m_atype(atype)
         {
             #ifndef NDEBUG
                 ++alive_count();
@@ -350,7 +350,7 @@ namespace EBNF
     {
         string_type     m_name;
 
-        IdentAst(const string_type& name) : BaseAst(ASTID_IDENT), m_name(name)
+        IdentAst(const string_type& name) : BaseAst(ATYPE_IDENT), m_name(name)
         {
         }
         virtual void to_dbg(os_type& os) const
@@ -375,7 +375,7 @@ namespace EBNF
     {
         int m_integer;
 
-        IntegerAst(int integer) : BaseAst(ASTID_INTEGER), m_integer(integer)
+        IntegerAst(int integer) : BaseAst(ATYPE_INTEGER), m_integer(integer)
         {
         }
         virtual void to_dbg(os_type& os) const
@@ -400,7 +400,7 @@ namespace EBNF
     {
         string_type m_str;  // unquoted string
 
-        StringAst(const string_type& str) : BaseAst(ASTID_STRING), m_str(str)
+        StringAst(const string_type& str) : BaseAst(ATYPE_STRING), m_str(str)
         {
         }
         virtual void to_dbg(os_type& os) const
@@ -428,7 +428,7 @@ namespace EBNF
     {
         string_type m_str;
 
-        SpecialAst(const string_type& str) : BaseAst(ASTID_SPECIAL), m_str(str)
+        SpecialAst(const string_type& str) : BaseAst(ATYPE_SPECIAL), m_str(str)
         {
         }
         virtual void to_dbg(os_type& os) const
@@ -455,7 +455,7 @@ namespace EBNF
         BaseAst *m_arg;
 
         UnaryAst(const string_type& str, BaseAst *arg = NULL)
-            : BaseAst(ASTID_UNARY), m_str(str), m_arg(arg)
+            : BaseAst(ATYPE_UNARY), m_str(str), m_arg(arg)
         {
         }
         ~UnaryAst()
@@ -516,7 +516,7 @@ namespace EBNF
         BaseAst *m_right;
 
         BinaryAst(const string_type& str, BaseAst *left, BaseAst *right)
-            : BaseAst(ASTID_BINARY), m_str(str), m_left(left), m_right(right)
+            : BaseAst(ATYPE_BINARY), m_str(str), m_left(left), m_right(right)
         {
             assert(m_left);
             assert(m_right);
@@ -574,11 +574,11 @@ namespace EBNF
         string_type m_str;  // "rules", "defs", or "terms"
         std::vector<BaseAst *> m_vec;
 
-        SeqAst(const string_type& str) : BaseAst(ASTID_SEQ), m_str(str)
+        SeqAst(const string_type& str) : BaseAst(ATYPE_SEQ), m_str(str)
         {
         }
         SeqAst(const string_type& str, BaseAst *ast)
-            : BaseAst(ASTID_SEQ), m_str(str)
+            : BaseAst(ATYPE_SEQ), m_str(str)
         {
             assert(ast);
             m_vec.push_back(ast);
@@ -674,7 +674,7 @@ namespace EBNF
 
     struct EmptyAst : public BaseAst
     {
-        EmptyAst() : BaseAst(ASTID_EMPTY)
+        EmptyAst() : BaseAst(ATYPE_EMPTY)
         {
         }
         virtual void to_dbg(os_type& os) const
@@ -1614,24 +1614,24 @@ namespace EBNF
         assert(ast1);
         assert(ast2);
 
-        if (ast1->m_id != ast2->m_id)
+        if (ast1->m_atype != ast2->m_atype)
             return false;
 
-        switch (ast1->m_id)
+        switch (ast1->m_atype)
         {
-        case ASTID_INTEGER:
+        case ATYPE_INTEGER:
             {
                 IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
                 IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
                 return i1->m_integer == i2->m_integer;
             }
-        case ASTID_STRING:
+        case ATYPE_STRING:
             {
                 StringAst *s1 = static_cast<StringAst *>(ast1);
                 StringAst *s2 = static_cast<StringAst *>(ast2);
                 return s1->m_str == s2->m_str;
             }
-        case ASTID_BINARY:
+        case ATYPE_BINARY:
             {
                 BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
                 BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
@@ -1640,13 +1640,13 @@ namespace EBNF
                 return ast_equal(b1->m_left, b2->m_left) &&
                        ast_equal(b1->m_right, b2->m_right);
             }
-        case ASTID_IDENT:
+        case ATYPE_IDENT:
             {
                 IdentAst *i1 = static_cast<IdentAst *>(ast1);
                 IdentAst *i2 = static_cast<IdentAst *>(ast2);
                 return i1->m_name == i2->m_name;
             }
-        case ASTID_UNARY:
+        case ATYPE_UNARY:
             {
                 UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
                 UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
@@ -1656,7 +1656,7 @@ namespace EBNF
                     return false;
                 return ast_equal(u1->m_arg, u2->m_arg);
             }
-        case ASTID_SEQ:
+        case ATYPE_SEQ:
             {
                 SeqAst *s1 = static_cast<SeqAst *>(ast1);
                 SeqAst *s2 = static_cast<SeqAst *>(ast2);
@@ -1679,13 +1679,13 @@ namespace EBNF
                 delete s2;
                 return true;
             }
-        case ASTID_SPECIAL:
+        case ATYPE_SPECIAL:
             {
                 SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
                 SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
                 return spe1->m_str == spe2->m_str;
             }
-        case ASTID_EMPTY:
+        case ATYPE_EMPTY:
             return true;
         }
     }
@@ -1694,26 +1694,26 @@ namespace EBNF
         assert(ast1);
         assert(ast2);
 
-        if (ast1->m_id < ast2->m_id)
+        if (ast1->m_atype < ast2->m_atype)
             return true;
-        if (ast1->m_id > ast2->m_id)
+        if (ast1->m_atype > ast2->m_atype)
             return false;
 
-        switch (ast1->m_id)
+        switch (ast1->m_atype)
         {
-        case ASTID_INTEGER:
+        case ATYPE_INTEGER:
             {
                 IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
                 IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
                 return i1->m_integer < i2->m_integer;
             }
-        case ASTID_STRING:
+        case ATYPE_STRING:
             {
                 StringAst *s1 = static_cast<StringAst *>(ast1);
                 StringAst *s2 = static_cast<StringAst *>(ast2);
                 return s1->m_str < s2->m_str;
             }
-        case ASTID_BINARY:
+        case ATYPE_BINARY:
             {
                 BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
                 BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
@@ -1727,13 +1727,13 @@ namespace EBNF
                     return false;
                 return ast_less_than(b1->m_right, b2->m_right);
             }
-        case ASTID_IDENT:
+        case ATYPE_IDENT:
             {
                 IdentAst *i1 = static_cast<IdentAst *>(ast1);
                 IdentAst *i2 = static_cast<IdentAst *>(ast2);
                 return i1->m_name < i2->m_name;
             }
-        case ASTID_UNARY:
+        case ATYPE_UNARY:
             {
                 UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
                 UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
@@ -1747,7 +1747,7 @@ namespace EBNF
                     return false;
                 return ast_less_than(u1->m_arg, u2->m_arg);
             }
-        case ASTID_SEQ:
+        case ATYPE_SEQ:
             {
                 SeqAst *s1 = static_cast<SeqAst *>(ast1);
                 SeqAst *s2 = static_cast<SeqAst *>(ast2);
@@ -1784,13 +1784,13 @@ namespace EBNF
                 delete s2;
                 return less_than;
             }
-        case ASTID_SPECIAL:
+        case ATYPE_SPECIAL:
             {
                 SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
                 SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
                 return spe1->m_str < spe2->m_str;
             }
-        case ASTID_EMPTY:
+        case ATYPE_EMPTY:
             return false;
         }
     }
