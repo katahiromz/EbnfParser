@@ -69,6 +69,13 @@ static COMPARE_TEST_RETURN just_do_it(const COMPARE_TEST_ENTRY *entry)
     SeqAst *seq1 = do_parse(entry->input1);
     SeqAst *seq2 = do_parse(entry->input2);
 
+    if (seq1 == NULL || seq2 == NULL)
+    {
+        delete seq1;
+        delete seq2;
+        return TR_OTHER_ERROR;
+    }
+
 #ifndef NDEBUG
     os_type os;
     os << "seq1: ";
@@ -79,13 +86,6 @@ static COMPARE_TEST_RETURN just_do_it(const COMPARE_TEST_ENTRY *entry)
     os << "\n";
     puts(os.str().c_str());
 #endif
-
-    if (seq1 == NULL || seq2 == NULL)
-    {
-        delete seq1;
-        delete seq2;
-        return TR_OTHER_ERROR;
-    }
 
     COMPARE_TEST_RETURN ret;
     if (ast_equal(seq1, seq2))
