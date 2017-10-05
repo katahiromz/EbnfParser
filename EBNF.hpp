@@ -1756,7 +1756,8 @@ namespace EBNF
                 s2 = static_cast<SeqAst *>(s2->sorted_clone());
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if (!ast_less_than(s1->m_vec[i], s2->m_vec[i]))
+                    if (!ast_equal(s1->m_vec[i], s2->m_vec[i]) &&
+                        !ast_less_than(s1->m_vec[i], s2->m_vec[i]))
                     {
                         delete s1;
                         delete s2;
