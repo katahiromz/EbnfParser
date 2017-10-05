@@ -1,29 +1,29 @@
-// EbnfParserTest.cpp --- tests for ISO EBNF parser
+// EbnfParseTest.cpp --- tests for ISO EBNF parser
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
 #include "EBNF.hpp"
 #include <cstdio>       // for std::puts
 
-int g_num_executions = 0;       // number of test executions
-int g_num_failures = 0;         // number of test failures
+static int g_num_executions = 0;       // number of test executions
+static int g_num_failures = 0;         // number of test failures
 
-struct TEST_ENTRY
-{
-    int entry_number;   // #
-    size_t num_rules;   // number of rules
-    int ret;            // return value
-    const char *input;
-};
-
-enum TEST_RETURN
+enum PARSE_TEST_RETURN
 {
     TR_SUCCESS = 0,
     TR_SCAN_FAIL,
     TR_PARSE_FAIL,
 };
 
-static const TEST_ENTRY g_test_entries[] =
+struct PARSE_TEST_ENTRY
+{
+    int entry_number;       // #
+    size_t num_rules;       // number of rules
+    PARSE_TEST_RETURN ret;  // return value
+    const char *input;
+};
+
+static const PARSE_TEST_ENTRY g_test_entries[] =
 {
 #ifdef ISO_EBNF
     { 1, 0, TR_SCAN_FAIL,      "list = '';" }, // empty string
@@ -114,7 +114,7 @@ static const TEST_ENTRY g_test_entries[] =
     { 52, 1, TR_SUCCESS, "text = { character | };" },
 };
 
-TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
+PARSE_TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
 {
     using namespace EBNF;
 
@@ -122,7 +122,7 @@ TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
 
     TokenStream stream(scanner);
 
-    TEST_RETURN ret = TR_SCAN_FAIL;
+    PARSE_TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
     os << "input: " << str << std::endl;
     num_rules = 0;
@@ -163,11 +163,11 @@ TEST_RETURN just_do_it(const std::string& str, size_t& num_rules)
     return ret;
 }
 
-bool do_test_entry(const TEST_ENTRY *entry)
+bool do_test_entry(const PARSE_TEST_ENTRY *entry)
 {
     bool failed = false;
     size_t num_rules = 0;
-    int ret = just_do_it(entry->input, num_rules);
+    PARSE_TEST_RETURN ret = just_do_it(entry->input, num_rules);
     if (ret != entry->ret)
     {
         printf("#%d: FAILED: ret expected %d, got %d\n", entry->entry_number, entry->ret, ret);
