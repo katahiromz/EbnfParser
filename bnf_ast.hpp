@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    6   // Version 6
+#define BNF_AST_HPP_    7   // Version 7
 
 #include <string>       // for std::string
 #include <vector>       // for std::vector
@@ -161,6 +161,14 @@ namespace bnf_ast
         virtual BaseAst *sorted_clone() const
         {
             return clone();
+        }
+        bool empty() const
+        {
+            return m_str.empty();
+        }
+        size_t size() const
+        {
+            return m_str.size();
         }
     };
 
@@ -324,6 +332,10 @@ namespace bnf_ast
         virtual BaseAst *sorted_clone() const
         {
             return clone();
+        }
+        bool empty() const
+        {
+            return true;
         }
     };
 
@@ -528,7 +540,7 @@ namespace bnf_ast
         if (m_atype == ATYPE_STRING)
         {
             const StringAst *str = static_cast<const StringAst *>(this);
-            if (str->m_str.empty())
+            if (str->empty())
                 return true;
         }
 
