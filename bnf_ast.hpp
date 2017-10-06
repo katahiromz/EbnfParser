@@ -176,7 +176,7 @@ namespace bnf_ast
         }
         virtual void to_bnf(os_type& os) const
         {
-            os << '?' << m_str << '?';
+            os << "..." << m_str << "...";
         }
         virtual void to_ebnf(os_type& os) const
         {
@@ -254,7 +254,7 @@ namespace bnf_ast
 
     struct SeqAst : public BaseAst
     {
-        string_type m_str;  // "rules", "expr", or "list"
+        string_type m_str;  // "rules", "expr", or "terms"
         std::vector<BaseAst *> m_vec;
 
         SeqAst(const string_type& str) : BaseAst(ATYPE_SEQ), m_str(str)
@@ -703,7 +703,7 @@ namespace bnf_ast
             }
             return;
         }
-        if (m_str == "list")
+        if (m_str == "terms")
         {
             if (m_vec.size())
             {
@@ -742,7 +742,7 @@ namespace bnf_ast
             }
             return;
         }
-        if (m_str == "list")
+        if (m_str == "terms")
         {
             if (m_vec.size())
             {

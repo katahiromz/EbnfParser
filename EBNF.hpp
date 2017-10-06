@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_HPP_
-#define EBNF_HPP_   13  // Version 13
+#define EBNF_HPP_   14  // Version 14
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -975,7 +975,7 @@ namespace EBNF
     }
 
     // single_definition = term, {',', term};
-    // single_definition is SeqAst("list").
+    // single_definition is SeqAst("terms").
     inline BaseAst *Parser::visit_single_definition()
     {
         PRINT_FUNCTION();
@@ -984,7 +984,7 @@ namespace EBNF
         if (term == NULL)
             return NULL;
 
-        SeqAst *seq = new SeqAst("list");
+        SeqAst *seq = new SeqAst("terms");
         for (;;)
         {
             seq->push_back(term);
