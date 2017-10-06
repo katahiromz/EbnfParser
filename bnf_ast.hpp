@@ -580,7 +580,7 @@ namespace bnf_ast
         if (m_str == "+" || m_str == "*" || m_str == "?")
         {
             assert(0);
-            m_arg->to_bnf(os);
+            m_arg->to_ebnf(os);
             os << m_str;
             return;
         }
