@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_
+#define BNF_AST_HPP_    5   // Version 5
 
 #include <string>       // for std::string
 #include <vector>       // for std::vector
@@ -218,7 +218,11 @@ namespace bnf_ast
         }
         virtual BaseAst *sorted_clone() const
         {
-            return clone();
+            if (m_arg)
+            {
+                return new UnaryAst(m_str, m_arg->sorted_clone());
+            }
+            return new UnaryAst(m_str);
         }
     };
 
@@ -248,7 +252,9 @@ namespace bnf_ast
         }
         virtual BaseAst *sorted_clone() const
         {
-            return clone();
+            BaseAst *left = m_left->sorted_clone();
+            BaseAst *right = m_right->sorted_clone();
+            return new BinaryAst(m_str, left, right);
         }
     };
 
@@ -286,6 +292,7 @@ namespace bnf_ast
         {
             return size() == 0;
         }
+        void unique();
         virtual BaseAst *clone() const;
         virtual BaseAst *sorted_clone() const;
         virtual void to_dbg(os_type& os) const;
@@ -669,7 +676,24 @@ namespace bnf_ast
             ast->push_back(cloned);
         }
         std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
+        ast->unique();
         return ast;
+    }
+
+    inline void SeqAst::unique()
+    {
+        for (size_t i = 0; i < m_vec.size() - 1; )
+        {
+            if (ast_equal(m_vec[i], m_vec[i + 1]))
+            {
+                delete m_vec[i];
+                m_vec.erase(m_vec.begin() + i);
+            }
+            else
+            {
+                ++i;
+            }
+        }
     }
 
     inline void SeqAst::to_dbg(os_type& os) const

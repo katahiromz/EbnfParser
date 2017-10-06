@@ -35,6 +35,8 @@ static const COMPARE_TEST_ENTRY g_test_entries[] =
     { 7, TR_LESS_THAN, "a = a | b | b;", "a = c | b | a;" },
     { 8, TR_GREATER_THAN, "a = a;", "a = 'a';" },
     { 9, TR_LESS_THAN, "test = a;", "test1 = a;" },
+    { 10, TR_EQUAL, "test = a;", "test = a | a;" },
+    { 11, TR_EQUAL, "test = a | b;", "test = a | a | b;" },
 };
 
 static EBNF::SeqAst *do_parse(const std::string& str)
@@ -86,6 +88,16 @@ static COMPARE_TEST_RETURN just_do_it(const COMPARE_TEST_ENTRY *entry)
     os << "seq2: ";
     seq2->to_dbg(os);
     os << "\n";
+    BaseAst *s1 = seq1->sorted_clone();
+    BaseAst *s2 = seq2->sorted_clone();
+    os << "s1: ";
+    s1->to_dbg(os);
+    os << "\n";
+    os << "s2: ";
+    s2->to_dbg(os);
+    os << "\n";
+    delete s1;
+    delete s2;
     puts(os.str().c_str());
 #endif
 
