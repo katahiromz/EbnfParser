@@ -549,7 +549,9 @@ namespace bnf_ast
         {
             m_arg->to_bnf(os);
             os << m_str;
+            return;
         }
+        assert(0);
     }
 
     inline void UnaryAst::to_ebnf(os_type& os) const
@@ -575,12 +577,7 @@ namespace bnf_ast
             os << ')';
             return;
         }
-        if (m_str == "+" || m_str == "*" || m_str == "?")
-        {
-            assert(0);
-            m_arg->to_ebnf(os);
-            os << m_str;
-        }
+        assert(0);
     }
 
     inline void BinaryAst::to_dbg(os_type& os) const
@@ -616,6 +613,7 @@ namespace bnf_ast
             m_right->to_bnf(os);
             return;
         }
+        assert(0);
     }
 
     inline void BinaryAst::to_ebnf(os_type& os) const
@@ -642,6 +640,7 @@ namespace bnf_ast
             m_right->to_ebnf(os);
             return;
         }
+        assert(0);
     }
 
     inline BaseAst *SeqAst::clone() const
@@ -717,6 +716,7 @@ namespace bnf_ast
             }
             return;
         }
+        assert(0);
     }
 
     inline void SeqAst::to_ebnf(os_type& os) const
@@ -755,6 +755,7 @@ namespace bnf_ast
             }
             return;
         }
+        assert(0);
     }
 } // namespace bnf_ast
 
