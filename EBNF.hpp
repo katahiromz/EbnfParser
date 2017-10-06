@@ -861,8 +861,6 @@ namespace EBNF
         if (m_stream.size() == 0)
             return false;
 
-        m_stream.fixup();
-
         delete m_ast;
         m_ast = visit_syntax();
         if (m_ast != NULL && type() == TOK_EOF)

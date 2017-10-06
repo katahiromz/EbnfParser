@@ -47,6 +47,8 @@ static EBNF::SeqAst *do_parse(const std::string& str)
 
     if (stream.scan())
     {
+        stream.fixup();
+
         Parser parser(stream);
         if (parser.parse())
         {

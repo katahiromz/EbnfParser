@@ -129,6 +129,8 @@ just_do_it(const std::string& str, size_t& num_rules)
     num_rules = 0;
     if (stream.scan())
     {
+        stream.fixup();
+
         ret = TR_PARSE_FAIL;
         stream.to_dbg(os);
 
