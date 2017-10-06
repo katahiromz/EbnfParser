@@ -900,7 +900,7 @@ namespace EBNF
     }
 
     // syntax_rule = meta_identifier, '=', definitions_list, ';';
-    // syntax_rule is BinaryAst(IdentAst, SeqAst("defs")).
+    // syntax_rule is BinaryAst(IdentAst, SeqAst("expr")).
     inline BaseAst *Parser::visit_syntax_rule()
     {
         PRINT_FUNCTION();
@@ -934,12 +934,12 @@ namespace EBNF
         }
         next();
 
-        BinaryAst *bin = new BinaryAst("=", id, def_list);
+        BinaryAst *bin = new BinaryAst("rule", id, def_list);
         return bin;
     }
 
     // definitions_list = single_definition, {'|', single_definition};
-    // definitions_list is SeqAst("defs").
+    // definitions_list is SeqAst("expr").
     inline BaseAst *Parser::visit_definitions_list()
     {
         PRINT_FUNCTION();
@@ -948,7 +948,7 @@ namespace EBNF
         if (ast == NULL)
             return NULL;
 
-        SeqAst *seq = new SeqAst("defs");
+        SeqAst *seq = new SeqAst("expr");
         for (;;)
         {
             seq->push_back(ast);
@@ -973,7 +973,7 @@ namespace EBNF
     }
 
     // single_definition = term, {',', term};
-    // single_definition is SeqAst("terms").
+    // single_definition is SeqAst("list").
     inline BaseAst *Parser::visit_single_definition()
     {
         PRINT_FUNCTION();
@@ -982,7 +982,7 @@ namespace EBNF
         if (term == NULL)
             return NULL;
 
-        SeqAst *seq = new SeqAst("terms");
+        SeqAst *seq = new SeqAst("list");
         for (;;)
         {
             seq->push_back(term);

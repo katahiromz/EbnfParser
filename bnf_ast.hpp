@@ -56,7 +56,8 @@ namespace bnf_ast
         }
 
         virtual void to_dbg(os_type& os) const = 0;
-        virtual void to_out(os_type& os) const = 0;
+        virtual void to_bnf(os_type& os) const = 0;
+        virtual void to_ebnf(os_type& os) const = 0;
         virtual BaseAst *clone() const = 0;
         virtual BaseAst *sorted_clone() const = 0;
     private:
@@ -80,7 +81,11 @@ namespace bnf_ast
         {
             os << "[IDENT: " << m_name << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
+        {
+            os << "<" << m_name << ">";
+        }
+        virtual void to_ebnf(os_type& os) const
         {
             os << m_name;
         }
@@ -105,7 +110,11 @@ namespace bnf_ast
         {
             os << "[INTEGER: " << m_integer << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
+        {
+            os << m_integer;
+        }
+        virtual void to_ebnf(os_type& os) const
         {
             os << m_integer;
         }
@@ -130,7 +139,14 @@ namespace bnf_ast
         {
             os << "[STRING: " << m_str << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
+        {
+            if (m_str.find('"') == string_type::npos)
+                os << '"' << m_str << '"';
+            else
+                os << "'" << m_str << "'";
+        }
+        virtual void to_ebnf(os_type& os) const
         {
             if (m_str.find('"') == string_type::npos)
                 os << '"' << m_str << '"';
@@ -158,7 +174,11 @@ namespace bnf_ast
         {
             os << "[SPECIAL: " << m_str << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
+        {
+            os << '?' << m_str << '?';
+        }
+        virtual void to_ebnf(os_type& os) const
         {
             os << '?' << m_str << '?';
         }
@@ -174,7 +194,7 @@ namespace bnf_ast
 
     struct UnaryAst : public BaseAst
     {
-        string_type m_str;  // "optional", "repeated", or "group"
+        string_type m_str;  // "+", "*", "?", "optional", "repeated", or "group"
         BaseAst *m_arg;
 
         UnaryAst(const string_type& str, BaseAst *arg = NULL)
@@ -194,26 +214,55 @@ namespace bnf_ast
             }
             os << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
         {
             if (m_str == "optional")
             {
                 os << '[';
-                m_arg->to_out(os);
+                m_arg->to_bnf(os);
                 os << ']';
                 return;
             }
             if (m_str == "repeated")
             {
                 os << '{';
-                m_arg->to_out(os);
+                m_arg->to_bnf(os);
                 os << '}';
                 return;
             }
             if (m_str == "group")
             {
                 os << '(';
-                m_arg->to_out(os);
+                m_arg->to_bnf(os);
+                os << ')';
+                return;
+            }
+            if (m_str == "+" || m_str == "*" || m_str == "?")
+            {
+                m_arg->to_bnf(os);
+                os << m_str;
+            }
+        }
+        virtual void to_ebnf(os_type& os) const
+        {
+            if (m_str == "optional")
+            {
+                os << '[';
+                m_arg->to_ebnf(os);
+                os << ']';
+                return;
+            }
+            if (m_str == "repeated")
+            {
+                os << '{';
+                m_arg->to_ebnf(os);
+                os << '}';
+                return;
+            }
+            if (m_str == "group")
+            {
+                os << '(';
+                m_arg->to_ebnf(os);
                 os << ')';
                 return;
             }
@@ -234,7 +283,7 @@ namespace bnf_ast
 
     struct BinaryAst : public BaseAst
     {
-        string_type m_str;  // "=", "-", or "*"
+        string_type m_str;  // "rule", "-", or "*"
         BaseAst *m_left;
         BaseAst *m_right;
 
@@ -257,28 +306,53 @@ namespace bnf_ast
             m_right->to_dbg(os);
             os << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
         {
-            if (m_str == "=")
+            if (m_str == "rule")
             {
-                m_left->to_out(os);
+                m_left->to_bnf(os);
+                os << " ::= ";
+                m_right->to_bnf(os);
+                os << "\n";
+                return;
+            }
+            if (m_str == "-")
+            {
+                m_left->to_bnf(os);
+                os << " - ";
+                m_right->to_bnf(os);
+                return;
+            }
+            if (m_str == "*")
+            {
+                m_left->to_bnf(os);
+                os << " * ";
+                m_right->to_bnf(os);
+                return;
+            }
+        }
+        virtual void to_ebnf(os_type& os) const
+        {
+            if (m_str == "rule")
+            {
+                m_left->to_ebnf(os);
                 os << " = ";
-                m_right->to_out(os);
+                m_right->to_ebnf(os);
                 os << ";\n";
                 return;
             }
             if (m_str == "-")
             {
-                m_left->to_out(os);
+                m_left->to_ebnf(os);
                 os << " - ";
-                m_right->to_out(os);
+                m_right->to_ebnf(os);
                 return;
             }
             if (m_str == "*")
             {
-                m_left->to_out(os);
+                m_left->to_ebnf(os);
                 os << " * ";
-                m_right->to_out(os);
+                m_right->to_ebnf(os);
                 return;
             }
         }
@@ -294,7 +368,7 @@ namespace bnf_ast
 
     struct SeqAst : public BaseAst
     {
-        string_type m_str;  // "rules", "defs", or "terms"
+        string_type m_str;  // "rules", "expr", or "list"
         std::vector<BaseAst *> m_vec;
 
         SeqAst(const string_type& str) : BaseAst(ATYPE_SEQ), m_str(str)
@@ -360,38 +434,75 @@ namespace bnf_ast
             }
             os << "]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
         {
             if (m_str == "rules")
             {
                 for (size_t i = 0; i < m_vec.size(); ++i)
                 {
-                    m_vec[i]->to_out(os);
+                    m_vec[i]->to_bnf(os);
                 }
                 return;
             }
-            if (m_str == "defs")
+            if (m_str == "expr")
             {
                 if (m_vec.size())
                 {
-                    m_vec[0]->to_out(os);
+                    m_vec[0]->to_bnf(os);
                     for (size_t i = 1; i < m_vec.size(); ++i)
                     {
                         os << " | ";
-                        m_vec[i]->to_out(os);
+                        m_vec[i]->to_bnf(os);
                     }
                 }
                 return;
             }
-            if (m_str == "terms")
+            if (m_str == "list")
             {
                 if (m_vec.size())
                 {
-                    m_vec[0]->to_out(os);
+                    m_vec[0]->to_bnf(os);
+                    for (size_t i = 1; i < m_vec.size(); ++i)
+                    {
+                        os << " ";
+                        m_vec[i]->to_bnf(os);
+                    }
+                }
+                return;
+            }
+        }
+        virtual void to_ebnf(os_type& os) const
+        {
+            if (m_str == "rules")
+            {
+                for (size_t i = 0; i < m_vec.size(); ++i)
+                {
+                    m_vec[i]->to_ebnf(os);
+                }
+                return;
+            }
+            if (m_str == "expr")
+            {
+                if (m_vec.size())
+                {
+                    m_vec[0]->to_ebnf(os);
+                    for (size_t i = 1; i < m_vec.size(); ++i)
+                    {
+                        os << " | ";
+                        m_vec[i]->to_ebnf(os);
+                    }
+                }
+                return;
+            }
+            if (m_str == "list")
+            {
+                if (m_vec.size())
+                {
+                    m_vec[0]->to_ebnf(os);
                     for (size_t i = 1; i < m_vec.size(); ++i)
                     {
                         os << ", ";
-                        m_vec[i]->to_out(os);
+                        m_vec[i]->to_ebnf(os);
                     }
                 }
                 return;
@@ -408,7 +519,10 @@ namespace bnf_ast
         {
             os << "[EMPTY]";
         }
-        virtual void to_out(os_type& os) const
+        virtual void to_bnf(os_type& os) const
+        {
+        }
+        virtual void to_ebnf(os_type& os) const
         {
         }
         virtual BaseAst *clone() const

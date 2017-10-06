@@ -140,8 +140,8 @@ just_do_it(const std::string& str, size_t& num_rules)
 
             os << "\nto_dbg:\n";
             ast->to_dbg(os);
-            os << "\n\nto_out:\n";
-            ast->to_out(os);
+            os << "\n\nto_ebnf:\n";
+            ast->to_ebnf(os);
 
             if (ast->m_atype == ATYPE_SEQ)
             {
