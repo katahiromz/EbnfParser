@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_HPP_
-#define EBNF_HPP_   12  // Version 12
+#define EBNF_HPP_   13  // Version 13
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -219,6 +219,11 @@ namespace EBNF
 
         TokenStream(StringScanner& scanner);
         bool scan();
+        void fixup()
+        {
+            delete_comments();
+            join_words();
+        }
 
         void delete_comments();
         void join_words();
@@ -856,8 +861,7 @@ namespace EBNF
         if (m_stream.size() == 0)
             return false;
 
-        m_stream.delete_comments();
-        m_stream.join_words();
+        m_stream.fixup();
 
         delete m_ast;
         m_ast = visit_syntax();
