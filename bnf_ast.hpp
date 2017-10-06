@@ -577,6 +577,13 @@ namespace bnf_ast
             os << ')';
             return;
         }
+        if (m_str == "+" || m_str == "*" || m_str == "?")
+        {
+            assert(0);
+            m_arg->to_bnf(os);
+            os << m_str;
+            return;
+        }
         assert(0);
     }
 
