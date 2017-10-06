@@ -214,59 +214,8 @@ namespace bnf_ast
             }
             os << "]";
         }
-        virtual void to_bnf(os_type& os) const
-        {
-            if (m_str == "optional")
-            {
-                os << '[';
-                m_arg->to_bnf(os);
-                os << ']';
-                return;
-            }
-            if (m_str == "repeated")
-            {
-                os << '{';
-                m_arg->to_bnf(os);
-                os << '}';
-                return;
-            }
-            if (m_str == "group")
-            {
-                os << '(';
-                m_arg->to_bnf(os);
-                os << ')';
-                return;
-            }
-            if (m_str == "+" || m_str == "*" || m_str == "?")
-            {
-                m_arg->to_bnf(os);
-                os << m_str;
-            }
-        }
-        virtual void to_ebnf(os_type& os) const
-        {
-            if (m_str == "optional")
-            {
-                os << '[';
-                m_arg->to_ebnf(os);
-                os << ']';
-                return;
-            }
-            if (m_str == "repeated")
-            {
-                os << '{';
-                m_arg->to_ebnf(os);
-                os << '}';
-                return;
-            }
-            if (m_str == "group")
-            {
-                os << '(';
-                m_arg->to_ebnf(os);
-                os << ')';
-                return;
-            }
-        }
+        virtual void to_bnf(os_type& os) const;
+        virtual void to_ebnf(os_type& os) const;
         virtual BaseAst *clone() const
         {
             if (m_arg)
@@ -298,64 +247,9 @@ namespace bnf_ast
             delete m_left;
             delete m_right;
         }
-        virtual void to_dbg(os_type& os) const
-        {
-            os << "[BINARY " << m_str << ": ";
-            m_left->to_dbg(os);
-            os << ", ";
-            m_right->to_dbg(os);
-            os << "]";
-        }
-        virtual void to_bnf(os_type& os) const
-        {
-            if (m_str == "rule")
-            {
-                m_left->to_bnf(os);
-                os << " ::= ";
-                m_right->to_bnf(os);
-                os << "\n";
-                return;
-            }
-            if (m_str == "-")
-            {
-                m_left->to_bnf(os);
-                os << " - ";
-                m_right->to_bnf(os);
-                return;
-            }
-            if (m_str == "*")
-            {
-                m_left->to_bnf(os);
-                os << " * ";
-                m_right->to_bnf(os);
-                return;
-            }
-        }
-        virtual void to_ebnf(os_type& os) const
-        {
-            if (m_str == "rule")
-            {
-                m_left->to_ebnf(os);
-                os << " = ";
-                m_right->to_ebnf(os);
-                os << ";\n";
-                return;
-            }
-            if (m_str == "-")
-            {
-                m_left->to_ebnf(os);
-                os << " - ";
-                m_right->to_ebnf(os);
-                return;
-            }
-            if (m_str == "*")
-            {
-                m_left->to_ebnf(os);
-                os << " * ";
-                m_right->to_ebnf(os);
-                return;
-            }
-        }
+        virtual void to_dbg(os_type& os) const;
+        virtual void to_bnf(os_type& os) const;
+        virtual void to_ebnf(os_type& os) const;
         virtual BaseAst *clone() const
         {
             return new BinaryAst(m_str, m_left->clone(), m_right->clone());
@@ -400,114 +294,11 @@ namespace bnf_ast
         {
             return size() == 0;
         }
-        virtual BaseAst *clone() const
-        {
-            SeqAst *ast = new SeqAst(m_str);
-            for (size_t i = 0; i < m_vec.size(); ++i)
-            {
-                ast->push_back(m_vec[i]->clone());
-            }
-            return ast;
-        }
-        virtual BaseAst *sorted_clone() const
-        {
-            SeqAst *ast = new SeqAst(m_str);
-            for (size_t i = 0; i < m_vec.size(); ++i)
-            {
-                BaseAst *cloned = m_vec[i]->sorted_clone();
-                ast->push_back(cloned);
-            }
-            std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
-            return ast;
-        }
-        virtual void to_dbg(os_type& os) const
-        {
-            os << "[SEQ " << m_str << ": ";
-            if (m_vec.size())
-            {
-                m_vec[0]->to_dbg(os);
-                for (size_t i = 1; i < m_vec.size(); ++i)
-                {
-                    os << ", ";
-                    m_vec[i]->to_dbg(os);
-                }
-            }
-            os << "]";
-        }
-        virtual void to_bnf(os_type& os) const
-        {
-            if (m_str == "rules")
-            {
-                for (size_t i = 0; i < m_vec.size(); ++i)
-                {
-                    m_vec[i]->to_bnf(os);
-                }
-                return;
-            }
-            if (m_str == "expr")
-            {
-                if (m_vec.size())
-                {
-                    m_vec[0]->to_bnf(os);
-                    for (size_t i = 1; i < m_vec.size(); ++i)
-                    {
-                        os << " | ";
-                        m_vec[i]->to_bnf(os);
-                    }
-                }
-                return;
-            }
-            if (m_str == "list")
-            {
-                if (m_vec.size())
-                {
-                    m_vec[0]->to_bnf(os);
-                    for (size_t i = 1; i < m_vec.size(); ++i)
-                    {
-                        os << " ";
-                        m_vec[i]->to_bnf(os);
-                    }
-                }
-                return;
-            }
-        }
-        virtual void to_ebnf(os_type& os) const
-        {
-            if (m_str == "rules")
-            {
-                for (size_t i = 0; i < m_vec.size(); ++i)
-                {
-                    m_vec[i]->to_ebnf(os);
-                }
-                return;
-            }
-            if (m_str == "expr")
-            {
-                if (m_vec.size())
-                {
-                    m_vec[0]->to_ebnf(os);
-                    for (size_t i = 1; i < m_vec.size(); ++i)
-                    {
-                        os << " | ";
-                        m_vec[i]->to_ebnf(os);
-                    }
-                }
-                return;
-            }
-            if (m_str == "list")
-            {
-                if (m_vec.size())
-                {
-                    m_vec[0]->to_ebnf(os);
-                    for (size_t i = 1; i < m_vec.size(); ++i)
-                    {
-                        os << ", ";
-                        m_vec[i]->to_ebnf(os);
-                    }
-                }
-                return;
-            }
-        }
+        virtual BaseAst *clone() const;
+        virtual BaseAst *sorted_clone() const;
+        virtual void to_dbg(os_type& os) const;
+        virtual void to_bnf(os_type& os) const;
+        virtual void to_ebnf(os_type& os) const;
     };
 
     struct EmptyAst : public BaseAst
@@ -723,6 +514,244 @@ namespace bnf_ast
             }
         case ATYPE_EMPTY:
             return false;
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    // AST inlines
+
+    inline void UnaryAst::to_bnf(os_type& os) const
+    {
+        if (m_str == "optional")
+        {
+            os << '[';
+            m_arg->to_bnf(os);
+            os << ']';
+            return;
+        }
+        if (m_str == "repeated")
+        {
+            os << '{';
+            m_arg->to_bnf(os);
+            os << '}';
+            return;
+        }
+        if (m_str == "group")
+        {
+            os << '(';
+            m_arg->to_bnf(os);
+            os << ')';
+            return;
+        }
+        if (m_str == "+" || m_str == "*" || m_str == "?")
+        {
+            m_arg->to_bnf(os);
+            os << m_str;
+        }
+    }
+
+    inline void UnaryAst::to_ebnf(os_type& os) const
+    {
+        if (m_str == "optional")
+        {
+            os << '[';
+            m_arg->to_ebnf(os);
+            os << ']';
+            return;
+        }
+        if (m_str == "repeated")
+        {
+            os << '{';
+            m_arg->to_ebnf(os);
+            os << '}';
+            return;
+        }
+        if (m_str == "group")
+        {
+            os << '(';
+            m_arg->to_ebnf(os);
+            os << ')';
+            return;
+        }
+        if (m_str == "+" || m_str == "*" || m_str == "?")
+        {
+            assert(0);
+            m_arg->to_ebnf(os);
+            os << m_str;
+        }
+    }
+
+    inline void BinaryAst::to_dbg(os_type& os) const
+    {
+        os << "[BINARY " << m_str << ": ";
+        m_left->to_dbg(os);
+        os << ", ";
+        m_right->to_dbg(os);
+        os << "]";
+    }
+
+    inline void BinaryAst::to_bnf(os_type& os) const
+    {
+        if (m_str == "rule")
+        {
+            m_left->to_bnf(os);
+            os << " ::= ";
+            m_right->to_bnf(os);
+            os << "\n";
+            return;
+        }
+        if (m_str == "-")
+        {
+            m_left->to_bnf(os);
+            os << " - ";
+            m_right->to_bnf(os);
+            return;
+        }
+        if (m_str == "*")
+        {
+            m_left->to_bnf(os);
+            os << " * ";
+            m_right->to_bnf(os);
+            return;
+        }
+    }
+
+    inline void BinaryAst::to_ebnf(os_type& os) const
+    {
+        if (m_str == "rule")
+        {
+            m_left->to_ebnf(os);
+            os << " = ";
+            m_right->to_ebnf(os);
+            os << ";\n";
+            return;
+        }
+        if (m_str == "-")
+        {
+            m_left->to_ebnf(os);
+            os << " - ";
+            m_right->to_ebnf(os);
+            return;
+        }
+        if (m_str == "*")
+        {
+            m_left->to_ebnf(os);
+            os << " * ";
+            m_right->to_ebnf(os);
+            return;
+        }
+    }
+
+    inline BaseAst *SeqAst::clone() const
+    {
+        SeqAst *ast = new SeqAst(m_str);
+        for (size_t i = 0; i < m_vec.size(); ++i)
+        {
+            ast->push_back(m_vec[i]->clone());
+        }
+        return ast;
+    }
+
+    inline BaseAst *SeqAst::sorted_clone() const
+    {
+        SeqAst *ast = new SeqAst(m_str);
+        for (size_t i = 0; i < m_vec.size(); ++i)
+        {
+            BaseAst *cloned = m_vec[i]->sorted_clone();
+            ast->push_back(cloned);
+        }
+        std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
+        return ast;
+    }
+
+    inline void SeqAst::to_dbg(os_type& os) const
+    {
+        os << "[SEQ " << m_str << ": ";
+        if (m_vec.size())
+        {
+            m_vec[0]->to_dbg(os);
+            for (size_t i = 1; i < m_vec.size(); ++i)
+            {
+                os << ", ";
+                m_vec[i]->to_dbg(os);
+            }
+        }
+        os << "]";
+    }
+
+    inline void SeqAst::to_bnf(os_type& os) const
+    {
+        if (m_str == "rules")
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                m_vec[i]->to_bnf(os);
+            }
+            return;
+        }
+        if (m_str == "expr")
+        {
+            if (m_vec.size())
+            {
+                m_vec[0]->to_bnf(os);
+                for (size_t i = 1; i < m_vec.size(); ++i)
+                {
+                    os << " | ";
+                    m_vec[i]->to_bnf(os);
+                }
+            }
+            return;
+        }
+        if (m_str == "list")
+        {
+            if (m_vec.size())
+            {
+                m_vec[0]->to_bnf(os);
+                for (size_t i = 1; i < m_vec.size(); ++i)
+                {
+                    os << " ";
+                    m_vec[i]->to_bnf(os);
+                }
+            }
+            return;
+        }
+    }
+
+    inline void SeqAst::to_ebnf(os_type& os) const
+    {
+        if (m_str == "rules")
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                m_vec[i]->to_ebnf(os);
+            }
+            return;
+        }
+        if (m_str == "expr")
+        {
+            if (m_vec.size())
+            {
+                m_vec[0]->to_ebnf(os);
+                for (size_t i = 1; i < m_vec.size(); ++i)
+                {
+                    os << " | ";
+                    m_vec[i]->to_ebnf(os);
+                }
+            }
+            return;
+        }
+        if (m_str == "list")
+        {
+            if (m_vec.size())
+            {
+                m_vec[0]->to_ebnf(os);
+                for (size_t i = 1; i < m_vec.size(); ++i)
+                {
+                    os << ", ";
+                    m_vec[i]->to_ebnf(os);
+                }
+            }
+            return;
         }
     }
 } // namespace bnf_ast
