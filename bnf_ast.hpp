@@ -521,6 +521,7 @@ namespace bnf_ast
         }
         virtual void to_bnf(os_type& os) const
         {
+            os << "\"\"";
         }
         virtual void to_ebnf(os_type& os) const
         {
