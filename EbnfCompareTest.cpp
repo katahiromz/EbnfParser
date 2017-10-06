@@ -45,7 +45,7 @@ static EBNF::SeqAst *do_parse(const std::string& str)
 
     TokenStream stream(scanner);
 
-    if (stream.scan_tokens())
+    if (stream.scan())
     {
         Parser parser(stream);
         if (parser.parse())

@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_HPP_
-#define EBNF_HPP_   11  // Version 11
+#define EBNF_HPP_   12  // Version 12
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -218,7 +218,7 @@ namespace EBNF
         std::vector<AuxInfo>    m_warnings;
 
         TokenStream(StringScanner& scanner);
-        bool scan_tokens();
+        bool scan();
 
         void delete_comments();
         void join_words();
@@ -510,7 +510,7 @@ namespace EBNF
         return m_scanner.index_to_line(m_scanner.index());
     }
 
-    inline bool TokenStream::scan_tokens()
+    inline bool TokenStream::scan()
     {
         m_tokens.clear();
 
