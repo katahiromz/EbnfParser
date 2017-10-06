@@ -1,4 +1,4 @@
-// EBNF.hpp --- ISO EBNF manipulator
+// EBNF.hpp --- ISO EBNF notation manipulator
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////////
-// ISO EBNF manipulator
+// ISO EBNF notation manipulator
 
 #define ISO_EBNF     // ISO/IEC 14977 : 1996(E)
 

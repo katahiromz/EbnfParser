@@ -1,4 +1,4 @@
-// bnf_ast.hpp --- BNF/EBNF AST
+// bnf_ast.hpp --- BNF/EBNF notation AST
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 

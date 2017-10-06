@@ -1,7 +1,7 @@
-EbnfParser --- an ISO EBNF parser
+EbnfParser --- an ISO EBNF notation parser
 /////////////////////////////////////////////////////
 
-This is an ISO EBNF parser by katahiromz.
+This is an ISO EBNF notation parser by katahiromz.
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [A.N.T.]

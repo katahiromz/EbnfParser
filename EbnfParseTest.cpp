@@ -1,4 +1,4 @@
-// EbnfParseTest.cpp --- tests for ISO EBNF parser
+// EbnfParseTest.cpp --- tests for ISO EBNF notation parser
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 

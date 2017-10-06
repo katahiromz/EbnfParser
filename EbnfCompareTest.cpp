@@ -1,4 +1,4 @@
-// EbnfCompareTest.cpp --- comparison tests for ISO EBNF
+// EbnfCompareTest.cpp --- comparison tests for ISO EBNF notation
 // See ReadMe.txt and License.txt.
 /////////////////////////////////////////////////////////////////////////
 
