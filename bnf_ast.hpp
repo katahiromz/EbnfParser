@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    5   // Version 5
+#define BNF_AST_HPP_    6   // Version 6
 
 #include <string>       // for std::string
 #include <vector>       // for std::vector
@@ -55,6 +55,7 @@ namespace bnf_ast
             #endif
         }
 
+        virtual bool empty() const;
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_bnf(os_type& os) const = 0;
         virtual void to_ebnf(os_type& os) const = 0;
@@ -519,6 +520,28 @@ namespace bnf_ast
     /////////////////////////////////////////////////////////////////////////
     // AST inlines
 
+    inline bool BaseAst::empty() const
+    {
+        if (m_atype == ATYPE_EMPTY)
+            return true;
+
+        if (m_atype == ATYPE_STRING)
+        {
+            const StringAst *str = static_cast<const StringAst *>(this);
+            if (str->m_str.empty())
+                return true;
+        }
+
+        if (m_atype == ATYPE_SEQ)
+        {
+            const SeqAst *seq = static_cast<const SeqAst *>(this);
+            if (seq->empty())
+                return true;
+        }
+
+        return false;
+    }
+
     inline void UnaryAst::to_dbg(os_type& os) const
     {
         os << "[UNARY " << m_str << ": ";
@@ -670,13 +693,27 @@ namespace bnf_ast
     inline BaseAst *SeqAst::sorted_clone() const
     {
         SeqAst *ast = new SeqAst(m_str);
-        for (size_t i = 0; i < m_vec.size(); ++i)
+        if (m_str == "terms")
         {
-            BaseAst *cloned = m_vec[i]->sorted_clone();
-            ast->push_back(cloned);
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                if (m_vec[i]->empty())
+                    continue;
+
+                BaseAst *cloned = m_vec[i]->sorted_clone();
+                ast->push_back(cloned);
+            }
         }
-        std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
-        ast->unique();
+        else if (m_str == "rules" || m_str == "expr")
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                BaseAst *cloned = m_vec[i]->sorted_clone();
+                ast->push_back(cloned);
+            }
+            std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
+            ast->unique();
+        }
         return ast;
     }
 
