@@ -205,15 +205,7 @@ namespace bnf_ast
         {
             delete m_arg;
         }
-        virtual void to_dbg(os_type& os) const
-        {
-            os << "[UNARY " << m_str << ": ";
-            if (m_arg)
-            {
-                m_arg->to_dbg(os);
-            }
-            os << "]";
-        }
+        virtual void to_dbg(os_type& os) const;
         virtual void to_bnf(os_type& os) const;
         virtual void to_ebnf(os_type& os) const;
         virtual BaseAst *clone() const
@@ -519,6 +511,16 @@ namespace bnf_ast
 
     /////////////////////////////////////////////////////////////////////////
     // AST inlines
+
+    inline void UnaryAst::to_dbg(os_type& os) const
+    {
+        os << "[UNARY " << m_str << ": ";
+        if (m_arg)
+        {
+            m_arg->to_dbg(os);
+        }
+        os << "]";
+    }
 
     inline void UnaryAst::to_bnf(os_type& os) const
     {
