@@ -536,7 +536,7 @@ namespace bnf_ast
         string_type ret;
         assert(rules->m_atype == ATYPE_SEQ);
         const SeqAst *seq = static_cast<const SeqAst *>(rules);
-        if (seq == NULL || seq->m_name != "rules" || seq->m_vec.empty())
+        if (seq == NULL || seq->m_str != "rules" || seq->m_vec.empty())
             return ret;
         const BaseAst *rule = seq->m_vec[0];
         assert(rule->m_atype == ATYPE_BINARY);
@@ -556,7 +556,7 @@ namespace bnf_ast
         assert(rules->m_atype == ATYPE_SEQ);
         SeqAst *seq = static_cast<SeqAst *>(rules);
         assert(seq);
-        if (seq->m_name != "rules" || seq->m_vec.empty())
+        if (seq->m_str != "rules" || seq->m_vec.empty())
             return NULL;
 
         for (size_t i = 0; i < seq->size(); ++i)
