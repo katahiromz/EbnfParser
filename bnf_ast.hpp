@@ -534,20 +534,17 @@ namespace bnf_ast
     inline string_type ast_get_first_rule_name(const BaseAst *rules)
     {
         string_type ret;
-        if (rules->m_atype != ATYPE_SEQ)
-            return ret;
+        assert(rules->m_atype == ATYPE_SEQ);
         const SeqAst *seq = static_cast<const SeqAst *>(rules);
-        if (seq == NULL || seq->m_vec.empty())
+        if (seq == NULL || seq->m_name != "rules" || seq->m_vec.empty())
             return ret;
         const BaseAst *rule = seq->m_vec[0];
-        if (rule->m_atype != ATYPE_BINARY)
-            return ret;
+        assert(rule->m_atype == ATYPE_BINARY);
         const BinaryAst *bin = static_cast<const BinaryAst *>(rule);
         if (bin == NULL || bin->m_str != "rule")
             return ret;
         const BaseAst *left = bin->m_left;
-        if (left->m_atype != ATYPE_IDENT)
-            return ret;
+        assert(left->m_atype == ATYPE_IDENT);
         const IdentAst *ident = static_cast<const IdentAst *>(left);
         if (ident)
             ret = ident->m_name;
@@ -559,7 +556,7 @@ namespace bnf_ast
         assert(rules->m_atype == ATYPE_SEQ);
         SeqAst *seq = static_cast<SeqAst *>(rules);
         assert(seq);
-        if (seq->m_vec.empty())
+        if (seq->m_name != "rules" || seq->m_vec.empty())
             return NULL;
 
         for (size_t i = 0; i < seq->size(); ++i)
