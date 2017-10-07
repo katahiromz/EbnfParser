@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    7   // Version 7
+#define BNF_AST_HPP_    8   // Version 8
 
 #include <string>       // for std::string
 #include <vector>       // for std::vector
@@ -68,8 +68,10 @@ namespace bnf_ast
     };
 
     // comparison
-    bool ast_equal(BaseAst *ast1, BaseAst *ast2);
-    bool ast_less_than(BaseAst *ast1, BaseAst *ast2);
+    bool ast_equal(const BaseAst *ast1, const BaseAst *ast2);
+    bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2);
+    string_type ast_get_first_rule_name(const BaseAst *rules);
+    BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& name);
 
     struct IdentAst : public BaseAst
     {
@@ -342,7 +344,7 @@ namespace bnf_ast
     /////////////////////////////////////////////////////////////////////////
     // comparison
 
-    inline bool ast_equal(BaseAst *ast1, BaseAst *ast2)
+    inline bool ast_equal(const BaseAst *ast1, const BaseAst *ast2)
     {
         assert(ast1);
         assert(ast2);
@@ -354,20 +356,20 @@ namespace bnf_ast
         {
         case ATYPE_INTEGER:
             {
-                IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
-                IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
+                const IntegerAst *i1 = static_cast<const IntegerAst *>(ast1);
+                const IntegerAst *i2 = static_cast<const IntegerAst *>(ast2);
                 return i1->m_integer == i2->m_integer;
             }
         case ATYPE_STRING:
             {
-                StringAst *s1 = static_cast<StringAst *>(ast1);
-                StringAst *s2 = static_cast<StringAst *>(ast2);
+                const StringAst *s1 = static_cast<const StringAst *>(ast1);
+                const StringAst *s2 = static_cast<const StringAst *>(ast2);
                 return s1->m_str == s2->m_str;
             }
         case ATYPE_BINARY:
             {
-                BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
-                BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
+                const BinaryAst *b1 = static_cast<const BinaryAst *>(ast1);
+                const BinaryAst *b2 = static_cast<const BinaryAst *>(ast2);
                 if (b1->m_str != b2->m_str)
                     return false;
                 return ast_equal(b1->m_left, b2->m_left) &&
@@ -375,14 +377,14 @@ namespace bnf_ast
             }
         case ATYPE_IDENT:
             {
-                IdentAst *i1 = static_cast<IdentAst *>(ast1);
-                IdentAst *i2 = static_cast<IdentAst *>(ast2);
+                const IdentAst *i1 = static_cast<const IdentAst *>(ast1);
+                const IdentAst *i2 = static_cast<const IdentAst *>(ast2);
                 return i1->m_name == i2->m_name;
             }
         case ATYPE_UNARY:
             {
-                UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
-                UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
+                const UnaryAst *u1 = static_cast<const UnaryAst *>(ast1);
+                const UnaryAst *u2 = static_cast<const UnaryAst *>(ast2);
                 if (u1->m_str != u2->m_str)
                     return false;
                 if (!u1->m_arg != !u2->m_arg)
@@ -391,31 +393,31 @@ namespace bnf_ast
             }
         case ATYPE_SEQ:
             {
-                SeqAst *s1 = static_cast<SeqAst *>(ast1);
-                SeqAst *s2 = static_cast<SeqAst *>(ast2);
+                const SeqAst *s1 = static_cast<const SeqAst *>(ast1);
+                const SeqAst *s2 = static_cast<const SeqAst *>(ast2);
                 if (s1->m_str != s2->m_str)
                     return false;
                 if (s1->size() != s2->size())
                     return false;
-                s1 = static_cast<SeqAst *>(s1->sorted_clone());
-                s2 = static_cast<SeqAst *>(s2->sorted_clone());
+                SeqAst *seq1 = static_cast<SeqAst *>(s1->sorted_clone());
+                SeqAst *seq2 = static_cast<SeqAst *>(s2->sorted_clone());
                 for (size_t i = 0; i < s1->size(); ++i)
                 {
-                    if (!ast_equal(s1->m_vec[i], s2->m_vec[i]))
+                    if (!ast_equal(seq1->m_vec[i], seq2->m_vec[i]))
                     {
-                        delete s1;
-                        delete s2;
+                        delete seq1;
+                        delete seq2;
                         return false;
                     }
                 }
-                delete s1;
-                delete s2;
+                delete seq1;
+                delete seq2;
                 return true;
             }
         case ATYPE_SPECIAL:
             {
-                SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
-                SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
+                const SpecialAst *spe1 = static_cast<const SpecialAst *>(ast1);
+                const SpecialAst *spe2 = static_cast<const SpecialAst *>(ast2);
                 return spe1->m_str == spe2->m_str;
             }
         case ATYPE_EMPTY:
@@ -423,7 +425,7 @@ namespace bnf_ast
         }
     }
 
-    inline bool ast_less_than(BaseAst *ast1, BaseAst *ast2)
+    inline bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2)
     {
         assert(ast1);
         assert(ast2);
@@ -437,20 +439,20 @@ namespace bnf_ast
         {
         case ATYPE_INTEGER:
             {
-                IntegerAst *i1 = static_cast<IntegerAst *>(ast1);
-                IntegerAst *i2 = static_cast<IntegerAst *>(ast2);
+                const IntegerAst *i1 = static_cast<const IntegerAst *>(ast1);
+                const IntegerAst *i2 = static_cast<const IntegerAst *>(ast2);
                 return i1->m_integer < i2->m_integer;
             }
         case ATYPE_STRING:
             {
-                StringAst *s1 = static_cast<StringAst *>(ast1);
-                StringAst *s2 = static_cast<StringAst *>(ast2);
+                const StringAst *s1 = static_cast<const StringAst *>(ast1);
+                const StringAst *s2 = static_cast<const StringAst *>(ast2);
                 return s1->m_str < s2->m_str;
             }
         case ATYPE_BINARY:
             {
-                BinaryAst *b1 = static_cast<BinaryAst *>(ast1);
-                BinaryAst *b2 = static_cast<BinaryAst *>(ast2);
+                const BinaryAst *b1 = static_cast<const BinaryAst *>(ast1);
+                const BinaryAst *b2 = static_cast<const BinaryAst *>(ast2);
                 if (b1->m_str < b2->m_str)
                     return true;
                 if (b1->m_str > b2->m_str)
@@ -463,14 +465,14 @@ namespace bnf_ast
             }
         case ATYPE_IDENT:
             {
-                IdentAst *i1 = static_cast<IdentAst *>(ast1);
-                IdentAst *i2 = static_cast<IdentAst *>(ast2);
+                const IdentAst *i1 = static_cast<const IdentAst *>(ast1);
+                const IdentAst *i2 = static_cast<const IdentAst *>(ast2);
                 return i1->m_name < i2->m_name;
             }
         case ATYPE_UNARY:
             {
-                UnaryAst *u1 = static_cast<UnaryAst *>(ast1);
-                UnaryAst *u2 = static_cast<UnaryAst *>(ast2);
+                const UnaryAst *u1 = static_cast<const UnaryAst *>(ast1);
+                const UnaryAst *u2 = static_cast<const UnaryAst *>(ast2);
                 if (u1->m_str < u2->m_str)
                     return true;
                 if (u1->m_str > u2->m_str)
@@ -483,8 +485,8 @@ namespace bnf_ast
             }
         case ATYPE_SEQ:
             {
-                SeqAst *s1 = static_cast<SeqAst *>(ast1);
-                SeqAst *s2 = static_cast<SeqAst *>(ast2);
+                const SeqAst *s1 = static_cast<const SeqAst *>(ast1);
+                const SeqAst *s2 = static_cast<const SeqAst *>(ast2);
                 if (s1->m_str < s2->m_str)
                     return true;
                 if (s1->m_str > s2->m_str)
@@ -496,37 +498,86 @@ namespace bnf_ast
                 else
                     count = s2->size();
 
-                s1 = static_cast<SeqAst *>(s1->sorted_clone());
-                s2 = static_cast<SeqAst *>(s2->sorted_clone());
+                SeqAst *seq1 = static_cast<SeqAst *>(s1->sorted_clone());
+                SeqAst *seq2 = static_cast<SeqAst *>(s2->sorted_clone());
 
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if (ast_equal(s1->m_vec[i], s2->m_vec[i]))
+                    if (ast_equal(seq1->m_vec[i], seq2->m_vec[i]))
                     {
                         continue;
                     }
                     else 
                     {
-                        bool ret = ast_less_than(s1->m_vec[i], s2->m_vec[i]);
-                        delete s1;
-                        delete s2;
+                        bool ret = ast_less_than(seq1->m_vec[i], seq2->m_vec[i]);
+                        delete seq1;
+                        delete seq2;
                         return ret;
                     }
                 }
-                bool less_than = s1->size() < s2->size();
-                delete s1;
-                delete s2;
+                bool less_than = seq1->size() < seq2->size();
+                delete seq1;
+                delete seq2;
                 return less_than;
             }
         case ATYPE_SPECIAL:
             {
-                SpecialAst *spe1 = static_cast<SpecialAst *>(ast1);
-                SpecialAst *spe2 = static_cast<SpecialAst *>(ast2);
+                const SpecialAst *spe1 = static_cast<const SpecialAst *>(ast1);
+                const SpecialAst *spe2 = static_cast<const SpecialAst *>(ast2);
                 return spe1->m_str < spe2->m_str;
             }
         case ATYPE_EMPTY:
             return false;
         }
+    }
+
+    inline string_type ast_get_first_rule_name(const BaseAst *rules)
+    {
+        string_type ret;
+        if (rules->m_atype != ATYPE_SEQ)
+            return ret;
+        const SeqAst *seq = static_cast<const SeqAst *>(rules);
+        if (seq == NULL || seq->m_vec.empty())
+            return ret;
+        const BaseAst *rule = seq->m_vec[0];
+        if (rule->m_atype != ATYPE_BINARY)
+            return ret;
+        const BinaryAst *bin = static_cast<const BinaryAst *>(rule);
+        if (bin == NULL || bin->m_str != "rule")
+            return ret;
+        const BaseAst *left = bin->m_left;
+        if (left->m_atype != ATYPE_IDENT)
+            return ret;
+        const IdentAst *ident = static_cast<const IdentAst *>(left);
+        if (ident)
+            ret = ident->m_name;
+        return ret;
+    }
+
+    inline BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& name)
+    {
+        assert(rules->m_atype == ATYPE_SEQ);
+        SeqAst *seq = static_cast<SeqAst *>(rules);
+        assert(seq);
+        if (seq->m_vec.empty())
+            return NULL;
+
+        for (size_t i = 0; i < seq->size(); ++i)
+        {
+            BinaryAst *bin = static_cast<BinaryAst *>(seq->m_vec[i]);
+            assert(bin && bin->m_str == "rule");
+
+            BaseAst *left = bin->m_left;
+            assert(left->m_atype == ATYPE_IDENT);
+
+            IdentAst *ident = static_cast<IdentAst *>(left);
+            assert(ident);
+
+            if (ident->m_name == name)
+                return bin->m_right;
+        }
+
+        return NULL;
     }
 
     /////////////////////////////////////////////////////////////////////////
