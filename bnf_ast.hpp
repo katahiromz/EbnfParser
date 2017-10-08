@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    18  // Version 18
+#define BNF_AST_HPP_    19  // Version 19
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -30,6 +30,16 @@ namespace bnf_ast
         ATYPE_SPECIAL,
         ATYPE_EMPTY
     };
+
+    struct BaseAst;
+        struct IntegerAst;
+        struct StringAst;
+        struct BinaryAst;
+        struct IdentAst;
+        struct UnaryAst;
+        struct SeqAst;
+        struct SpecialAst;
+        struct EmptyAst;
 
     struct BaseAst
     {
@@ -62,6 +72,27 @@ namespace bnf_ast
         virtual void to_ebnf(os_type& os) const = 0;
         virtual BaseAst *clone() const = 0;
         virtual BaseAst *sorted_clone() const = 0;
+
+        template <typename T, AstType atype>
+        T *get_ast();
+        template <typename T, AstType atype>
+        const T *get_ast() const;
+
+        IntegerAst *get_int_ast();
+        StringAst *get_str_ast();
+        BinaryAst *get_bin_ast();
+        IdentAst *get_ident_ast();
+        UnaryAst *get_unary_ast();
+        SeqAst *get_seq_ast();
+        SpecialAst *get_special_ast();
+
+        const IntegerAst *get_int_ast() const;
+        const StringAst *get_str_ast() const;
+        const BinaryAst *get_bin_ast() const;
+        const IdentAst *get_ident_ast() const;
+        const UnaryAst *get_unary_ast() const;
+        const SeqAst *get_seq_ast() const;
+        const SpecialAst *get_special_ast() const;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -395,20 +426,20 @@ namespace bnf_ast
         {
         case ATYPE_INTEGER:
             {
-                const IntegerAst *i1 = reinterpret_cast<const IntegerAst *>(ast1);
-                const IntegerAst *i2 = reinterpret_cast<const IntegerAst *>(ast2);
+                const IntegerAst *i1 = ast1->get_int_ast();
+                const IntegerAst *i2 = ast2->get_int_ast();
                 return i1->m_integer == i2->m_integer;
             }
         case ATYPE_STRING:
             {
-                const StringAst *s1 = reinterpret_cast<const StringAst *>(ast1);
-                const StringAst *s2 = reinterpret_cast<const StringAst *>(ast2);
+                const StringAst *s1 = ast1->get_str_ast();
+                const StringAst *s2 = ast2->get_str_ast();
                 return s1->m_str == s2->m_str;
             }
         case ATYPE_BINARY:
             {
-                const BinaryAst *b1 = reinterpret_cast<const BinaryAst *>(ast1);
-                const BinaryAst *b2 = reinterpret_cast<const BinaryAst *>(ast2);
+                const BinaryAst *b1 = ast1->get_bin_ast();
+                const BinaryAst *b2 = ast2->get_bin_ast();
                 if (b1->m_str != b2->m_str)
                     return false;
                 return ast_equal(b1->m_left, b2->m_left, already_sorted) &&
@@ -416,14 +447,14 @@ namespace bnf_ast
             }
         case ATYPE_IDENT:
             {
-                const IdentAst *i1 = reinterpret_cast<const IdentAst *>(ast1);
-                const IdentAst *i2 = reinterpret_cast<const IdentAst *>(ast2);
+                const IdentAst *i1 = ast1->get_ident_ast();
+                const IdentAst *i2 = ast2->get_ident_ast();
                 return i1->m_name == i2->m_name;
             }
         case ATYPE_UNARY:
             {
-                const UnaryAst *u1 = reinterpret_cast<const UnaryAst *>(ast1);
-                const UnaryAst *u2 = reinterpret_cast<const UnaryAst *>(ast2);
+                const UnaryAst *u1 = ast1->get_unary_ast();
+                const UnaryAst *u2 = ast1->get_unary_ast();
                 if (u1->m_str != u2->m_str)
                     return false;
                 if (!u1->m_arg != !u2->m_arg)
@@ -432,8 +463,8 @@ namespace bnf_ast
             }
         case ATYPE_SEQ:
             {
-                const SeqAst *s1 = reinterpret_cast<const SeqAst *>(ast1);
-                const SeqAst *s2 = reinterpret_cast<const SeqAst *>(ast2);
+                const SeqAst *s1 = ast1->get_seq_ast();
+                const SeqAst *s2 = ast2->get_seq_ast();
                 if (s1->m_str != s2->m_str)
                     return false;
                 if (s1->size() != s2->size())
@@ -450,8 +481,8 @@ namespace bnf_ast
                     return true;
                 }
 
-                SeqAst *seq1 = reinterpret_cast<SeqAst *>(s1->sorted_clone());
-                SeqAst *seq2 = reinterpret_cast<SeqAst *>(s2->sorted_clone());
+                SeqAst *seq1 = s1->sorted_clone()->get_seq_ast();
+                SeqAst *seq2 = s2->sorted_clone()->get_seq_ast();
                 for (size_t i = 0; i < s1->size(); ++i)
                 {
                     if (!ast_equal(seq1->m_vec[i], seq2->m_vec[i], true))
@@ -467,8 +498,8 @@ namespace bnf_ast
             }
         case ATYPE_SPECIAL:
             {
-                const SpecialAst *spe1 = reinterpret_cast<const SpecialAst *>(ast1);
-                const SpecialAst *spe2 = reinterpret_cast<const SpecialAst *>(ast2);
+                const SpecialAst *spe1 = ast1->get_special_ast();
+                const SpecialAst *spe2 = ast2->get_special_ast();
                 return spe1->m_str == spe2->m_str;
             }
         case ATYPE_EMPTY:
@@ -490,20 +521,20 @@ namespace bnf_ast
         {
         case ATYPE_INTEGER:
             {
-                const IntegerAst *i1 = reinterpret_cast<const IntegerAst *>(ast1);
-                const IntegerAst *i2 = reinterpret_cast<const IntegerAst *>(ast2);
+                const IntegerAst *i1 = ast1->get_int_ast();
+                const IntegerAst *i2 = ast2->get_int_ast();
                 return i1->m_integer < i2->m_integer;
             }
         case ATYPE_STRING:
             {
-                const StringAst *s1 = reinterpret_cast<const StringAst *>(ast1);
-                const StringAst *s2 = reinterpret_cast<const StringAst *>(ast2);
+                const StringAst *s1 = ast1->get_str_ast();
+                const StringAst *s2 = ast2->get_str_ast();
                 return s1->m_str < s2->m_str;
             }
         case ATYPE_BINARY:
             {
-                const BinaryAst *b1 = reinterpret_cast<const BinaryAst *>(ast1);
-                const BinaryAst *b2 = reinterpret_cast<const BinaryAst *>(ast2);
+                const BinaryAst *b1 = ast1->get_bin_ast();
+                const BinaryAst *b2 = ast2->get_bin_ast();
                 if (b1->m_str < b2->m_str)
                     return true;
                 if (b1->m_str > b2->m_str)
@@ -516,14 +547,14 @@ namespace bnf_ast
             }
         case ATYPE_IDENT:
             {
-                const IdentAst *i1 = reinterpret_cast<const IdentAst *>(ast1);
-                const IdentAst *i2 = reinterpret_cast<const IdentAst *>(ast2);
+                const IdentAst *i1 = ast1->get_ident_ast();
+                const IdentAst *i2 = ast2->get_ident_ast();
                 return i1->m_name < i2->m_name;
             }
         case ATYPE_UNARY:
             {
-                const UnaryAst *u1 = reinterpret_cast<const UnaryAst *>(ast1);
-                const UnaryAst *u2 = reinterpret_cast<const UnaryAst *>(ast2);
+                const UnaryAst *u1 = ast1->get_unary_ast();
+                const UnaryAst *u2 = ast2->get_unary_ast();
                 if (u1->m_str < u2->m_str)
                     return true;
                 if (u1->m_str > u2->m_str)
@@ -536,8 +567,8 @@ namespace bnf_ast
             }
         case ATYPE_SEQ:
             {
-                const SeqAst *s1 = reinterpret_cast<const SeqAst *>(ast1);
-                const SeqAst *s2 = reinterpret_cast<const SeqAst *>(ast2);
+                const SeqAst *s1 = ast1->get_seq_ast();
+                const SeqAst *s2 = ast2->get_seq_ast();
                 if (s1->m_str < s2->m_str)
                     return true;
                 if (s1->m_str > s2->m_str)
@@ -562,8 +593,8 @@ namespace bnf_ast
                     return s1->size() < s2->size();
                 }
 
-                SeqAst *seq1 = reinterpret_cast<SeqAst *>(s1->sorted_clone());
-                SeqAst *seq2 = reinterpret_cast<SeqAst *>(s2->sorted_clone());
+                SeqAst *seq1 = s1->sorted_clone()->get_seq_ast();
+                SeqAst *seq2 = s2->sorted_clone()->get_seq_ast();
 
                 for (size_t i = 0; i < count; ++i)
                 {
@@ -585,8 +616,8 @@ namespace bnf_ast
             }
         case ATYPE_SPECIAL:
             {
-                const SpecialAst *spe1 = reinterpret_cast<const SpecialAst *>(ast1);
-                const SpecialAst *spe2 = reinterpret_cast<const SpecialAst *>(ast2);
+                const SpecialAst *spe1 = ast1->get_special_ast();
+                const SpecialAst *spe2 = ast2->get_special_ast();
                 return spe1->m_str < spe2->m_str;
             }
         case ATYPE_EMPTY:
@@ -607,16 +638,17 @@ namespace bnf_ast
     inline const rules_vector *ast_get_rules_vector(const BaseAst *rules)
     {
         assert(rules->m_atype == ATYPE_SEQ);
-        const SeqAst *seq = reinterpret_cast<const SeqAst *>(rules);
-        assert(seq->m_str == "rules");
+        const SeqAst *seq = rules->get_seq_ast();
+        assert(seq && seq->m_str == "rules");
         return reinterpret_cast<const rules_vector *>(&seq->m_vec);
     }
 
     inline rules_vector *ast_get_rules_vector(BaseAst *rules)
     {
-        const rules_vector *pvec;
-        pvec = ast_get_rules_vector(const_cast<const BaseAst *>(rules));
-        return const_cast<rules_vector *>(pvec);
+        assert(rules->m_atype == ATYPE_SEQ);
+        SeqAst *seq = rules->get_seq_ast();
+        assert(seq && seq->m_str == "rules");
+        return reinterpret_cast<rules_vector *>(&seq->m_vec);
     }
 
     inline string_type ast_get_first_rule_name(const BaseAst *rules)
@@ -630,14 +662,11 @@ namespace bnf_ast
 
     inline string_type ast_get_rule_name(const BaseAst *rule)
     {
-        assert(rule->m_atype == ATYPE_BINARY);
-        const BinaryAst *bin = reinterpret_cast<const BinaryAst *>(rule);
+        const BinaryAst *bin = rule->get_bin_ast();
         assert(bin && bin->m_str == "rule");
 
-        const BaseAst *left = bin->m_left;
-        assert(left->m_atype == ATYPE_IDENT);
-
-        const IdentAst *ident = reinterpret_cast<const IdentAst *>(left);
+        const IdentAst *ident = bin->m_left->get_ident_ast();
+        assert(ident);
         return ident->m_name;
     }
 
@@ -660,7 +689,7 @@ namespace bnf_ast
         const rules_vector *pvec = ast_get_rules_vector(rules);
         for (size_t i = 0; i < (*pvec).size(); ++i)
         {
-            BinaryAst *bin = (*pvec)[i];
+            const BinaryAst *bin = (*pvec)[i];
             if (ast_get_rule_name(bin) == rule_name)
                 return bin->m_right;
         }
@@ -669,9 +698,14 @@ namespace bnf_ast
 
     inline BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& rule_name)
     {
-        const BaseAst *ast;
-        ast = ast_get_rule_body(const_cast<const BaseAst *>(rules), rule_name);
-        return const_cast<BaseAst *>(ast);
+        rules_vector *pvec = ast_get_rules_vector(rules);
+        for (size_t i = 0; i < (*pvec).size(); ++i)
+        {
+            BinaryAst *bin = (*pvec)[i];
+            if (ast_get_rule_name(bin) == rule_name)
+                return bin->m_right;
+        }
+        return NULL;
     }
 
     inline void ast_join_joinable_rules(BaseAst *rules)
@@ -697,15 +731,11 @@ namespace bnf_ast
                 if (name1 != name2)
                     continue;
 
-                BaseAst *ast1 = bin1->m_right;
-                assert(ast1->m_atype == ATYPE_SEQ);
-                SeqAst *seq1 = reinterpret_cast<SeqAst *>(ast1);
-                assert(seq1->m_str == "expr");
+                SeqAst *seq1 = bin1->m_right->get_seq_ast();
+                SeqAst *seq2 = bin2->m_right->get_seq_ast();
 
-                BaseAst *ast2 = bin2->m_right;
-                assert(ast2->m_atype == ATYPE_SEQ);
-                SeqAst *seq2 = reinterpret_cast<SeqAst *>(ast2);
-                assert(seq2->m_str == "expr");
+                assert(seq1 && seq1->m_str == "expr");
+                assert(seq2 && seq2->m_str == "expr");
 
                 seq1->m_vec.insert(seq1->m_vec.end(), seq2->m_vec.begin(), seq2->m_vec.end());
                 seq2->m_vec.clear();
@@ -719,7 +749,80 @@ namespace bnf_ast
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // AST class inlines
+    // AST inlines
+
+    template <typename T, AstType atype>
+    inline T *BaseAst::get_ast()
+    {
+        if (m_atype == atype)
+            return reinterpret_cast<T *>(this);
+        return NULL;
+    }
+    template <typename T, AstType atype>
+    inline const T *BaseAst::get_ast() const
+    {
+        if (m_atype == atype)
+            return reinterpret_cast<const T *>(this);
+        return NULL;
+    }
+
+    inline IntegerAst *BaseAst::get_int_ast()
+    {
+        return get_ast<IntegerAst, ATYPE_INTEGER>();
+    }
+    inline StringAst *BaseAst::get_str_ast()
+    {
+        return get_ast<StringAst, ATYPE_STRING>();
+    }
+    inline BinaryAst *BaseAst::get_bin_ast()
+    {
+        return get_ast<BinaryAst, ATYPE_BINARY>();
+    }
+    inline IdentAst *BaseAst::get_ident_ast()
+    {
+        return get_ast<IdentAst, ATYPE_IDENT>();
+    }
+    inline UnaryAst *BaseAst::get_unary_ast()
+    {
+        return get_ast<UnaryAst, ATYPE_UNARY>();
+    }
+    inline SeqAst *BaseAst::get_seq_ast()
+    {
+        return get_ast<SeqAst, ATYPE_SEQ>();
+    }
+    inline SpecialAst *BaseAst::get_special_ast()
+    {
+        return get_ast<SpecialAst, ATYPE_SPECIAL>();
+    }
+
+    inline const IntegerAst *BaseAst::get_int_ast() const
+    {
+        return get_ast<IntegerAst, ATYPE_INTEGER>();
+    }
+    inline const StringAst *BaseAst::get_str_ast() const
+    {
+        return get_ast<StringAst, ATYPE_STRING>();
+    }
+    inline const BinaryAst *BaseAst::get_bin_ast() const
+    {
+        return get_ast<BinaryAst, ATYPE_BINARY>();
+    }
+    inline const IdentAst *BaseAst::get_ident_ast() const
+    {
+        return get_ast<IdentAst, ATYPE_IDENT>();
+    }
+    inline const UnaryAst *BaseAst::get_unary_ast() const
+    {
+        return get_ast<UnaryAst, ATYPE_UNARY>();
+    }
+    inline const SeqAst *BaseAst::get_seq_ast() const
+    {
+        return get_ast<SeqAst, ATYPE_SEQ>();
+    }
+    inline const SpecialAst *BaseAst::get_special_ast() const
+    {
+        return get_ast<SpecialAst, ATYPE_SPECIAL>();
+    }
 
     inline void UnaryAst::to_dbg(os_type& os) const
     {

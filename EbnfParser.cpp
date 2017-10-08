@@ -61,7 +61,7 @@ void show_help(void)
 
 void show_version(void)
 {
-    printf("EbnfParser version %d by katahiromz\n", EBNF_HPP_);
+    printf("EbnfParser version %d by katahiromz\n", 20 * BNF_AST_HPP_ + EBNF_HPP_);
 }
 
 int main(int argc, char **argv)
