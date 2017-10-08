@@ -76,7 +76,7 @@ namespace EBNF
     }
     inline bool is_space(char ch)
     {
-        return strchr(" \t\n\r\f\v", ch) != NULL;
+        return strchr(" \t\n\r\f\v", ch) && ch;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -526,7 +526,7 @@ namespace EBNF
             for (;;)
             {
                 ch = peekch();
-                if (!is_space(ch) || ch == 0)
+                if (!is_space(ch))
                     break;
                 // space
                 nextch();
@@ -566,15 +566,6 @@ namespace EBNF
                 continue;
             }
 
-            if (ch == 0)
-            {
-                // end of file
-                size_t line = get_line();
-                Token token("", TOK_EOF, line);
-                m_tokens.push_back(token);
-                break;
-            }
-
             if (m_scanner.match_get("(*"))  // )
             {
                 // comment
@@ -605,7 +596,15 @@ namespace EBNF
                 return false;
             }
 
-            if (strchr("=;|,-*[]{}()", ch) != NULL)
+            if (ch == 0)
+            {
+                // end of file
+                size_t line = get_line();
+                Token token("", TOK_EOF, line);
+                m_tokens.push_back(token);
+                break;
+            }
+            else if (strchr("=;|,-*[]{}()", ch) != NULL)
             {
                 // symbol
                 nextch();
