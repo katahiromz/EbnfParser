@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    19  // Version 19
+#define BNF_AST_HPP_    20  // Version 20
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -116,11 +116,23 @@ namespace bnf_ast
         }
         virtual void to_bnf(os_type& os) const
         {
-            os << "<" << m_name << ">";
+            string_type name = m_name;
+            for (size_t i = 0; i < name.size(); ++i)
+            {
+                if (name[i] == ' ')
+                    name[i] = '-';
+            }
+            os << "<" << name << ">";
         }
         virtual void to_ebnf(os_type& os) const
         {
-            os << m_name;
+            string_type name = m_name;
+            for (size_t i = 0; i < name.size(); ++i)
+            {
+                if (name[i] == '-')
+                    name[i] = ' ';
+            }
+            os << name;
         }
         virtual BaseAst *clone() const
         {
