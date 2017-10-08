@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    12  // Version 12
+#define BNF_AST_HPP_    13  // Version 13
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -155,10 +155,7 @@ namespace bnf_ast
         {
             return new StringAst(m_str);
         }
-        virtual BaseAst *sorted_clone() const
-        {
-            return clone();
-        }
+        virtual BaseAst *sorted_clone() const;
         bool empty() const
         {
             return m_str.empty();
@@ -802,6 +799,14 @@ namespace bnf_ast
             return;
         }
         assert(0);
+    }
+
+    inline BaseAst *StringAst::sorted_clone() const
+    {
+        if (m_str.empty())
+            return new EmptyAst();
+
+        return new StringAst(m_str);
     }
 
     inline void BinaryAst::to_dbg(os_type& os) const
