@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    10  // Version 10
+#define BNF_AST_HPP_    11  // Version 11
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -339,9 +339,19 @@ namespace bnf_ast
     /////////////////////////////////////////////////////////////////////////
     // AST functions
 
-    bool ast_equal(const BaseAst *ast1, const BaseAst *ast2);
-    bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2);
-    bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2);
+    bool ast_equal(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted = false);
+    bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted = false);
+    bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted = false);
+
+    inline bool ast_equal_sorted(const BaseAst *ast1, const BaseAst *ast2)
+    {
+        return ast_equal(ast1, ast2, true);
+    }
+
+    inline bool ast_less_than_sorted(const BaseAst *ast1, const BaseAst *ast2)
+    {
+        return ast_less_than(ast1, ast2, true);
+    }
 
           rules_vector *ast_get_rules_vector(      BaseAst *rules);
     const rules_vector *ast_get_rules_vector(const BaseAst *rules);
@@ -357,7 +367,7 @@ namespace bnf_ast
     /////////////////////////////////////////////////////////////////////////
     // AST function inlines
 
-    inline bool ast_equal(const BaseAst *ast1, const BaseAst *ast2)
+    inline bool ast_equal(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted)
     {
         assert(ast1);
         assert(ast2);
@@ -385,8 +395,8 @@ namespace bnf_ast
                 const BinaryAst *b2 = reinterpret_cast<const BinaryAst *>(ast2);
                 if (b1->m_str != b2->m_str)
                     return false;
-                return ast_equal(b1->m_left, b2->m_left) &&
-                       ast_equal(b1->m_right, b2->m_right);
+                return ast_equal(b1->m_left, b2->m_left, already_sorted) &&
+                       ast_equal(b1->m_right, b2->m_right, already_sorted);
             }
         case ATYPE_IDENT:
             {
@@ -402,7 +412,7 @@ namespace bnf_ast
                     return false;
                 if (!u1->m_arg != !u2->m_arg)
                     return false;
-                return ast_equal(u1->m_arg, u2->m_arg);
+                return ast_equal(u1->m_arg, u2->m_arg, already_sorted);
             }
         case ATYPE_SEQ:
             {
@@ -412,11 +422,23 @@ namespace bnf_ast
                     return false;
                 if (s1->size() != s2->size())
                     return false;
+                if (already_sorted)
+                {
+                    for (size_t i = 0; i < s1->size(); ++i)
+                    {
+                        if (!ast_equal(s1->m_vec[i], s2->m_vec[i], true))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
                 SeqAst *seq1 = reinterpret_cast<SeqAst *>(s1->sorted_clone());
                 SeqAst *seq2 = reinterpret_cast<SeqAst *>(s2->sorted_clone());
                 for (size_t i = 0; i < s1->size(); ++i)
                 {
-                    if (!ast_equal(seq1->m_vec[i], seq2->m_vec[i]))
+                    if (!ast_equal(seq1->m_vec[i], seq2->m_vec[i], true))
                     {
                         delete seq1;
                         delete seq2;
@@ -438,7 +460,7 @@ namespace bnf_ast
         }
     }
 
-    inline bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2)
+    inline bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted)
     {
         assert(ast1);
         assert(ast2);
@@ -470,11 +492,11 @@ namespace bnf_ast
                     return true;
                 if (b1->m_str > b2->m_str)
                     return false;
-                if (ast_less_than(b1->m_left, b2->m_left))
+                if (ast_less_than(b1->m_left, b2->m_left, already_sorted))
                     return true;
-                if (!ast_equal(b1->m_left, b2->m_left))
+                if (!ast_equal(b1->m_left, b2->m_left, already_sorted))
                     return false;
-                return ast_less_than(b1->m_right, b2->m_right);
+                return ast_less_than(b1->m_right, b2->m_right, already_sorted);
             }
         case ATYPE_IDENT:
             {
@@ -494,7 +516,7 @@ namespace bnf_ast
                     return true;
                 if (!!u1->m_arg > !!u2->m_arg)
                     return false;
-                return ast_less_than(u1->m_arg, u2->m_arg);
+                return ast_less_than(u1->m_arg, u2->m_arg, already_sorted);
             }
         case ATYPE_SEQ:
             {
@@ -511,23 +533,35 @@ namespace bnf_ast
                 else
                     count = s2->size();
 
+                if (already_sorted)
+                {
+                    for (size_t i = 0; i < count; ++i)
+                    {
+                        if (ast_equal(s1->m_vec[i], s2->m_vec[i], true))
+                        {
+                            continue;
+                        }
+                        return ast_less_than(s1->m_vec[i], s2->m_vec[i], true);
+                    }
+                    return s1->size() < s2->size();
+                }
+
                 SeqAst *seq1 = reinterpret_cast<SeqAst *>(s1->sorted_clone());
                 SeqAst *seq2 = reinterpret_cast<SeqAst *>(s2->sorted_clone());
 
                 for (size_t i = 0; i < count; ++i)
                 {
-                    if (ast_equal(seq1->m_vec[i], seq2->m_vec[i]))
+                    if (ast_equal(seq1->m_vec[i], seq2->m_vec[i], true))
                     {
                         continue;
                     }
-                    else 
-                    {
-                        bool ret = ast_less_than(seq1->m_vec[i], seq2->m_vec[i]);
-                        delete seq1;
-                        delete seq2;
-                        return ret;
-                    }
+
+                    bool ret = ast_less_than(seq1->m_vec[i], seq2->m_vec[i], true);
+                    delete seq1;
+                    delete seq2;
+                    return ret;
                 }
+
                 bool less_than = seq1->size() < seq2->size();
                 delete seq1;
                 delete seq2;
@@ -544,9 +578,14 @@ namespace bnf_ast
         }
     }
 
-    inline bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2)
+    inline bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2, bool already_sorted)
     {
-        return !ast_equal(ast1, ast2) && !ast_less_than(ast1, ast2);
+        BaseAst *cloned1 = ast1->sorted_clone();
+        BaseAst *cloned2 = ast2->sorted_clone();
+        bool ret = !ast_equal(ast1, ast2, true) && !ast_less_than(ast1, ast2, true);
+        delete cloned1;
+        delete cloned2;
+        return ret;
     }
 
     inline const rules_vector *ast_get_rules_vector(const BaseAst *rules)
@@ -849,7 +888,7 @@ namespace bnf_ast
                 BaseAst *cloned = m_vec[i]->sorted_clone();
                 ast->push_back(cloned);
             }
-            std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than);
+            std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than_sorted);
             ast->unique();
         }
         return ast;
@@ -859,7 +898,7 @@ namespace bnf_ast
     {
         for (size_t i = 0; i < m_vec.size() - 1; )
         {
-            if (ast_equal(m_vec[i], m_vec[i + 1]))
+            if (ast_equal(m_vec[i], m_vec[i + 1], true))
             {
                 delete m_vec[i];
                 m_vec.erase(m_vec.begin() + i);
