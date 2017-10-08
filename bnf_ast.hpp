@@ -359,8 +359,8 @@ namespace bnf_ast
     string_type ast_get_first_rule_name(const BaseAst *rules);
     string_type ast_get_rule_name(const BaseAst *rule);
 
-          BaseAst *ast_get_rule_body(      BaseAst *rules, const string_type& name);
-    const BaseAst *ast_get_rule_body(const BaseAst *rules, const string_type& name);
+          BaseAst *ast_get_rule_body(      BaseAst *rules, const string_type& rule_name);
+    const BaseAst *ast_get_rule_body(const BaseAst *rules, const string_type& rule_name);
 
     void ast_join_joinable_rules(BaseAst *rules);
 
@@ -626,7 +626,7 @@ namespace bnf_ast
     }
 
     inline const BaseAst *
-    ast_get_rule_body(const BaseAst *rules, const string_type& name)
+    ast_get_rule_body(const BaseAst *rules, const string_type& rule_name)
     {
         assert(rules->m_atype == ATYPE_SEQ);
 
@@ -637,16 +637,16 @@ namespace bnf_ast
         for (size_t i = 0; i < (*pvec).size(); ++i)
         {
             BinaryAst *bin = (*pvec)[i];
-            if (ast_get_rule_name(bin) == name)
+            if (ast_get_rule_name(bin) == rule_name)
                 return bin->m_right;
         }
         return NULL;
     }
 
-    inline BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& name)
+    inline BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& rule_name)
     {
         const BaseAst *ast;
-        ast = ast_get_rule_body(const_cast<const BaseAst *>(rules), name);
+        ast = ast_get_rule_body(const_cast<const BaseAst *>(rules), rule_name);
         return const_cast<BaseAst *>(ast);
     }
 
