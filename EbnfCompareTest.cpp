@@ -45,13 +45,14 @@ static EBNF::SeqAst *do_parse(const std::string& str)
 
     StringScanner scanner(str);
 
-    TokenStream stream(scanner);
+    AuxInfo aux;
+    TokenStream stream(scanner, aux);
 
     if (stream.scan())
     {
         stream.fixup();
 
-        Parser parser(stream);
+        Parser parser(stream, aux);
         if (parser.parse())
         {
             BaseAst *ast = parser.detach();

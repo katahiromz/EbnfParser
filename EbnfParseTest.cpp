@@ -121,7 +121,8 @@ just_do_it(const std::string& str, size_t& num_rules)
 
     StringScanner scanner(str);
 
-    TokenStream stream(scanner);
+    AuxInfo aux;
+    TokenStream stream(scanner, aux);
 
     PARSE_TEST_RETURN ret = TR_SCAN_FAIL;
     os_type os;
@@ -134,7 +135,7 @@ just_do_it(const std::string& str, size_t& num_rules)
         ret = TR_PARSE_FAIL;
         stream.to_dbg(os);
 
-        Parser parser(stream);
+        Parser parser(stream, aux);
         if (parser.parse())
         {
             ret = TR_SUCCESS;
@@ -151,15 +152,9 @@ just_do_it(const std::string& str, size_t& num_rules)
                 num_rules = seq->size();
             }
         }
-        else
-        {
-            parser.err_out(os);
-        }
     }
-    else
-    {
-        stream.err_out(os);
-    }
+    aux.err_out(os);
+
 #ifndef NDEBUG
     puts(os.str().c_str());
 #endif

@@ -80,12 +80,40 @@ namespace EBNF
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // AuxInfo
+    // AuxItem and AuxInfo
 
-    struct AuxInfo
+    struct AuxItem
     {
         size_t      m_line;
         string_type m_text;
+    };
+
+    struct AuxInfo
+    {
+        std::vector<AuxItem>    m_errors;
+        std::vector<AuxItem>    m_warnings;
+
+        void add_error(const string_type& msg, size_t line)
+        {
+            AuxItem item;
+            item.m_line = line;
+            item.m_text = msg;
+            m_errors.push_back(item);
+        }
+        void add_warning(const string_type& msg, size_t line)
+        {
+            AuxItem item;
+            item.m_line = line;
+            item.m_text = msg;
+            m_warnings.push_back(item);
+        }
+        void clear_errors()
+        {
+            m_errors.clear();
+            m_warnings.clear();
+        }
+
+        void err_out(os_type& os) const;
     };
 
     /////////////////////////////////////////////////////////////////////////
@@ -214,10 +242,8 @@ namespace EBNF
     {
     public:
         tokens_type             m_tokens;
-        std::vector<AuxInfo>    m_errors;
-        std::vector<AuxInfo>    m_warnings;
 
-        TokenStream(StringScanner& scanner);
+        TokenStream(StringScanner& scanner, AuxInfo& aux);
         bool scan();
         void fixup()
         {
@@ -227,12 +253,6 @@ namespace EBNF
 
         void delete_comments();
         void join_words();
-
-        void clear_errors()
-        {
-            m_errors.clear();
-            m_warnings.clear();
-        }
 
               Token& token();
         const Token& token() const;
@@ -249,7 +269,6 @@ namespace EBNF
         size_t get_line() const;
         size_t size() const;
 
-        void err_out(os_type& os) const;
         void to_dbg(os_type& os) const;
 
         void push_back(const Token& t);
@@ -263,32 +282,10 @@ namespace EBNF
             return m_tokens[i];
         }
 
-        void scan_error(const string_type& msg, size_t line)
-        {
-            AuxInfo info;
-            info.m_line = line;
-            info.m_text = msg;
-            m_errors.push_back(info);
-        }
-        void scan_error(const string_type& msg)
-        {
-            scan_error(msg, get_line());
-        }
-        void scan_warning(const string_type& msg, size_t line)
-        {
-            AuxInfo info;
-            info.m_line = line;
-            info.m_text = msg;
-            m_warnings.push_back(info);
-        }
-        void scan_warning(const string_type& msg)
-        {
-            scan_warning(msg, get_line());
-        }
-
     protected:
         size_t          m_index;
         StringScanner&  m_scanner;
+        AuxInfo&        m_aux;
 
         char getch()
         {
@@ -305,8 +302,8 @@ namespace EBNF
     class Parser
     {
     public:
-        Parser(TokenStream& stream)
-            : m_stream(stream), m_ast(NULL), m_line(0)
+        Parser(TokenStream& stream, AuxInfo& aux)
+            : m_stream(stream), m_aux(aux), m_ast(NULL), m_line(0)
         {
         }
         virtual ~Parser()
@@ -328,11 +325,6 @@ namespace EBNF
 
         bool parse();
 
-        void err_out(os_type& os) const
-        {
-            m_stream.err_out(os);
-        }
-
         BaseAst *visit_syntax();
         BaseAst *visit_syntax_rule();
         BaseAst *visit_definitions_list();
@@ -346,9 +338,10 @@ namespace EBNF
         BaseAst *visit_grouped_sequence();
 
     protected:
-        TokenStream m_stream;
-        BaseAst *m_ast;
-        size_t m_line;
+        TokenStream     m_stream;
+        AuxInfo&        m_aux;
+        BaseAst        *m_ast;
+        size_t          m_line;
 
         size_t index() const
         {
@@ -386,23 +379,24 @@ namespace EBNF
         {
             return m_stream.token().m_line;
         }
-        void parse_error(const string_type& msg, size_t line)
-        {
-            m_stream.scan_error(msg, line);
-        }
-        void parse_error(const string_type& msg)
-        {
-            parse_error(msg, get_line());
-        }
-        void parse_warning(const string_type& msg, size_t line)
-        {
-            m_stream.scan_warning(msg, line);
-        }
-        void parse_warning(const string_type& msg)
-        {
-            parse_warning(msg, get_line());
-        }
     };
+
+    /////////////////////////////////////////////////////////////////////////
+    // AuxInfo inlines
+
+    inline void AuxInfo::err_out(os_type& os) const
+    {
+        for (size_t i = 0; i < m_errors.size(); ++i)
+        {
+            const AuxItem& item = m_errors[i];
+            os << "ERROR: " << item.m_text << ", at line " << item.m_line << std::endl;
+        }
+        for (size_t i = 0; i < m_warnings.size(); ++i)
+        {
+            const AuxItem& item = m_warnings[i];
+            os << "WARNING: " << item.m_text << ", at line " << item.m_line << std::endl;
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////
     // TokenStream inlines
@@ -421,8 +415,8 @@ namespace EBNF
         os << "\n";
     }
 
-    inline TokenStream::TokenStream(StringScanner& scanner)
-        : m_index(0), m_scanner(scanner)
+    inline TokenStream::TokenStream(StringScanner& scanner, AuxInfo& aux)
+        : m_index(0), m_scanner(scanner), m_aux(aux)
     {
     }
 
@@ -447,20 +441,6 @@ namespace EBNF
     inline void TokenStream::push_back(const Token& t)
     {
         m_tokens.push_back(t);
-    }
-
-    inline void TokenStream::err_out(os_type& os) const
-    {
-        for (size_t i = 0; i < m_errors.size(); ++i)
-        {
-            const AuxInfo& info = m_errors[i];
-            os << "ERROR: " << info.m_text << ", at line " << info.m_line << std::endl;
-        }
-        for (size_t i = 0; i < m_warnings.size(); ++i)
-        {
-            const AuxInfo& info = m_warnings[i];
-            os << "WARNING: " << info.m_text << ", at line " << info.m_line << std::endl;
-        }
     }
 
     inline Token& TokenStream::token()
@@ -554,7 +534,7 @@ namespace EBNF
                     continue;
                 }
 
-                scan_error("terminal string is invalid", line);
+                m_aux.add_error("terminal string is invalid", line);
                 return false;
             }
 
@@ -596,7 +576,7 @@ namespace EBNF
                         continue;
                     }
 
-                    scan_error("no end of comment", line);
+                    m_aux.add_error("no end of comment", line);
                     return false;
                 }
                 ungetch();
@@ -617,7 +597,7 @@ namespace EBNF
                 }
 
                 // no end of special
-                scan_error("no end of special", line);
+                m_aux.add_error("no end of special", line);
                 return false;
             }
 
@@ -633,11 +613,14 @@ namespace EBNF
             }
 
             // invalid character
-            scan_error(std::string("invalid character: ") + ch);
+            string_type msg = "invalid character: '";
+            msg += ch;
+            msg += "'";
+            m_aux.add_error(msg, get_line());
             break;
         }
 
-        return m_errors.empty();
+        return m_aux.m_errors.empty();
     }
 
     inline void TokenStream::join_words()
@@ -909,14 +892,14 @@ namespace EBNF
 
         if (type() != TOK_IDENT)
         {
-            parse_error("expected TOK_IDENT");
+            m_aux.add_error("expected TOK_IDENT", get_line());
             return NULL;
         }
         IdentAst *id = new IdentAst(str());
         next();
         if (type() != TOK_SYMBOL || str() != "=")
         {
-            parse_error("expected '='");
+            m_aux.add_error("expected '='", get_line());
             delete id;
             return NULL;
         }
@@ -929,7 +912,7 @@ namespace EBNF
         }
         if (type() != TOK_SYMBOL || str() != ";")
         {
-            parse_error("expected ';' or ','");
+            m_aux.add_error("expected ';' or ','", get_line());
             delete id;
             delete def_list;
             return NULL;
@@ -1060,7 +1043,7 @@ namespace EBNF
                 }
                 delete i_ast;
             }
-            parse_error("expected '*'");
+            m_aux.add_error("expected '*'", get_line());
             return NULL;
         }
 
@@ -1130,7 +1113,7 @@ namespace EBNF
         BaseAst *ret;
         if (type() != TOK_SYMBOL || str() != "[")
         {
-            parse_error("expected '['");
+            m_aux.add_error("expected '['", get_line());
             return NULL;
         }
         next();
@@ -1142,7 +1125,7 @@ namespace EBNF
         }
         if (type() != TOK_SYMBOL || str() != "]")
         {
-            parse_error("']' unmatched");
+            m_aux.add_error("']' unmatched", get_line());
             delete ret;
             return NULL;
         }
@@ -1159,7 +1142,7 @@ namespace EBNF
         BaseAst *ret;
         if (type() != TOK_SYMBOL || str() != "{")
         {
-            parse_error("expected '{'");    // }
+            m_aux.add_error("expected '{'", get_line());    // }
             return NULL;
         }
         next();
@@ -1171,7 +1154,7 @@ namespace EBNF
         }
         if (type() != TOK_SYMBOL || str() != "}")
         {
-            parse_error("'}' unmatched");
+            m_aux.add_error("'}' unmatched", get_line());
             delete ret;
             return NULL;
         }
@@ -1189,7 +1172,7 @@ namespace EBNF
         BaseAst *ret;
         if (type() != TOK_SYMBOL || str() != "(")
         {
-            parse_error("expected '('");    // )
+            m_aux.add_error("expected '('", get_line());
             return NULL;
         }
         next();
@@ -1201,7 +1184,7 @@ namespace EBNF
         }
         if (type() != TOK_SYMBOL || str() != ")")
         {
-            parse_error("')' unmatched");
+            m_aux.add_error("')' unmatched", get_line());
             delete ret;
             return NULL;
         }
