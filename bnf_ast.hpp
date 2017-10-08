@@ -3,13 +3,13 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    8   // Version 8
+#define BNF_AST_HPP_    9   // Version 9
 
-#include <string>       // for std::string
-#include <vector>       // for std::vector
-#include <sstream>      // for std::stringstream
-#include <cassert>      // for assert macro
-#include <algorithm>    // for std::sort
+#include <string>           // for std::string
+#include <vector>           // for std::vector
+#include <sstream>          // for std::stringstream
+#include <cassert>          // for assert macro
+#include <algorithm>        // for std::sort
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -66,12 +66,6 @@ namespace bnf_ast
         BaseAst(const BaseAst&);
         BaseAst& operator=(const BaseAst&);
     };
-
-    // comparison
-    bool ast_equal(const BaseAst *ast1, const BaseAst *ast2);
-    bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2);
-    string_type ast_get_first_rule_name(const BaseAst *rules);
-    BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& name);
 
     struct IdentAst : public BaseAst
     {
@@ -268,6 +262,7 @@ namespace bnf_ast
             return new BinaryAst(m_str, left, right);
         }
     };
+    typedef std::vector<BinaryAst *> rules_vector;
 
     struct SeqAst : public BaseAst
     {
@@ -342,7 +337,23 @@ namespace bnf_ast
     };
 
     /////////////////////////////////////////////////////////////////////////
-    // comparison
+    // AST functions
+
+    bool ast_equal(const BaseAst *ast1, const BaseAst *ast2);
+    bool ast_less_than(const BaseAst *ast1, const BaseAst *ast2);
+    bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2);
+
+          rules_vector *ast_get_rules_vector(      BaseAst *rules);
+    const rules_vector *ast_get_rules_vector(const BaseAst *rules);
+
+    string_type ast_get_first_rule_name(const BaseAst *rules);
+    string_type ast_get_rule_name(const BaseAst *rule);
+
+          BaseAst *ast_get_rule_body(      BaseAst *rules, const string_type& name);
+    const BaseAst *ast_get_rule_body(const BaseAst *rules, const string_type& name);
+
+    /////////////////////////////////////////////////////////////////////////
+    // AST function inlines
 
     inline bool ast_equal(const BaseAst *ast1, const BaseAst *ast2)
     {
@@ -531,54 +542,74 @@ namespace bnf_ast
         }
     }
 
+    inline bool ast_greater_than(const BaseAst *ast1, const BaseAst *ast2)
+    {
+        return !ast_equal(ast1, ast2) && !ast_less_than(ast1, ast2);
+    }
+
+    inline const rules_vector *ast_get_rules_vector(const BaseAst *rules)
+    {
+        assert(rules->m_atype == ATYPE_SEQ);
+        const SeqAst *seq = reinterpret_cast<const SeqAst *>(rules);
+        assert(seq->m_str == "rules");
+        return reinterpret_cast<const rules_vector *>(&seq->m_vec);
+    }
+
+    inline rules_vector *ast_get_rules_vector(BaseAst *rules)
+    {
+        const rules_vector *pvec;
+        pvec = ast_get_rules_vector(const_cast<const BaseAst *>(rules));
+        return const_cast<rules_vector *>(pvec);
+    }
+
     inline string_type ast_get_first_rule_name(const BaseAst *rules)
     {
-        string_type ret;
-        assert(rules->m_atype == ATYPE_SEQ);
-        const SeqAst *seq = static_cast<const SeqAst *>(rules);
-        if (seq == NULL || seq->m_str != "rules" || seq->m_vec.empty())
-            return ret;
-        const BaseAst *rule = seq->m_vec[0];
+        const rules_vector *pvec;
+        pvec = ast_get_rules_vector(rules);
+        if (pvec == NULL || pvec->size() == 0)
+            return string_type();
+        return ast_get_rule_name((*pvec)[0]);
+    }
+
+    inline string_type ast_get_rule_name(const BaseAst *rule)
+    {
         assert(rule->m_atype == ATYPE_BINARY);
-        const BinaryAst *bin = static_cast<const BinaryAst *>(rule);
-        if (bin == NULL || bin->m_str != "rule")
-            return ret;
+        const BinaryAst *bin = reinterpret_cast<const BinaryAst *>(rule);
+        assert(bin && bin->m_str == "rule");
         const BaseAst *left = bin->m_left;
-        assert(left->m_atype == ATYPE_IDENT);
-        const IdentAst *ident = static_cast<const IdentAst *>(left);
-        if (ident)
-            ret = ident->m_name;
-        return ret;
+        const IdentAst *ident = reinterpret_cast<const IdentAst *>(left);
+        assert(ident && ident->m_atype == ATYPE_IDENT);
+        return ident->m_name;
+    }
+
+    inline const BaseAst *
+    ast_get_rule_body(const BaseAst *rules, const string_type& name)
+    {
+        assert(rules->m_atype == ATYPE_SEQ);
+
+        const rules_vector *pvec;
+        pvec = ast_get_rules_vector(rules);
+        if (pvec == NULL || pvec->size() == 0)
+            return NULL;
+
+        for (size_t i = 0; i < (*pvec).size(); ++i)
+        {
+            BinaryAst *bin = (*pvec)[i];
+            if (ast_get_rule_name(bin) == name)
+                return bin->m_right;
+        }
+        return NULL;
     }
 
     inline BaseAst *ast_get_rule_body(BaseAst *rules, const string_type& name)
     {
-        assert(rules->m_atype == ATYPE_SEQ);
-        SeqAst *seq = static_cast<SeqAst *>(rules);
-        assert(seq);
-        if (seq->m_str != "rules" || seq->m_vec.empty())
-            return NULL;
-
-        for (size_t i = 0; i < seq->size(); ++i)
-        {
-            BinaryAst *bin = static_cast<BinaryAst *>(seq->m_vec[i]);
-            assert(bin && bin->m_str == "rule");
-
-            BaseAst *left = bin->m_left;
-            assert(left->m_atype == ATYPE_IDENT);
-
-            IdentAst *ident = static_cast<IdentAst *>(left);
-            assert(ident);
-
-            if (ident->m_name == name)
-                return bin->m_right;
-        }
-
-        return NULL;
+        const BaseAst *ast;
+        ast = ast_get_rule_body(const_cast<const BaseAst *>(rules), name);
+        return const_cast<BaseAst *>(ast);
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // AST inlines
+    // AST class inlines
 
     inline bool BaseAst::empty() const
     {
