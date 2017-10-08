@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    11  // Version 11
+#define BNF_AST_HPP_    12  // Version 12
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -17,6 +17,7 @@ namespace bnf_ast
 {
     typedef std::string         string_type;
     typedef std::stringstream   os_type;
+    typedef std::vector<string_type>  names_type;
 
     enum AstType
     {
@@ -358,6 +359,7 @@ namespace bnf_ast
 
     string_type ast_get_first_rule_name(const BaseAst *rules);
     string_type ast_get_rule_name(const BaseAst *rule);
+    void ast_get_defined_rule_names(names_type& names, const BaseAst *rules);
 
           BaseAst *ast_get_rule_body(      BaseAst *rules, const string_type& rule_name);
     const BaseAst *ast_get_rule_body(const BaseAst *rules, const string_type& rule_name);
@@ -625,15 +627,23 @@ namespace bnf_ast
         return ident->m_name;
     }
 
+    inline void ast_get_defined_rule_names(names_type& names, const BaseAst *rules)
+    {
+        names.clear();
+        const rules_vector *pvec = ast_get_rules_vector(rules);
+        for (size_t i = 0; i < (*pvec).size(); ++i)
+        {
+            BinaryAst *bin = (*pvec)[i];
+            names.push_back(ast_get_rule_name(bin));
+        }
+        std::sort(names.begin(), names.end());
+        names.erase(std::unique(names.begin(), names.end()), names.end());
+    }
+
     inline const BaseAst *
     ast_get_rule_body(const BaseAst *rules, const string_type& rule_name)
     {
-        assert(rules->m_atype == ATYPE_SEQ);
-
         const rules_vector *pvec = ast_get_rules_vector(rules);
-        if (pvec == NULL || pvec->size() == 0)
-            return NULL;
-
         for (size_t i = 0; i < (*pvec).size(); ++i)
         {
             BinaryAst *bin = (*pvec)[i];
