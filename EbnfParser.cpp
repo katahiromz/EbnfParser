@@ -86,6 +86,12 @@ int main(int argc, char **argv)
             show_version();
             return 0;
         }
+        if (arg[0] == '-')
+        {
+            printf("ERROR: invalid argument - '%s'\n", arg);
+            show_help();
+            return 10;
+        }
         if (file == NULL)
         {
             file = arg;
