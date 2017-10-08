@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    13  // Version 13
+#define BNF_AST_HPP_    14  // Version 14
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -56,7 +56,7 @@ namespace bnf_ast
             #endif
         }
 
-        virtual bool empty() const;
+        virtual bool empty() const = 0;
         virtual void to_dbg(os_type& os) const = 0;
         virtual void to_bnf(os_type& os) const = 0;
         virtual void to_ebnf(os_type& os) const = 0;
@@ -74,6 +74,10 @@ namespace bnf_ast
 
         IdentAst(const string_type& name) : BaseAst(ATYPE_IDENT), m_name(name)
         {
+        }
+        virtual bool empty() const
+        {
+            return false;
         }
         virtual void to_dbg(os_type& os) const
         {
@@ -104,6 +108,10 @@ namespace bnf_ast
         IntegerAst(int integer) : BaseAst(ATYPE_INTEGER), m_integer(integer)
         {
         }
+        virtual bool empty() const
+        {
+            return false;
+        }
         virtual void to_dbg(os_type& os) const
         {
             os << "[INTEGER: " << m_integer << "]";
@@ -133,6 +141,14 @@ namespace bnf_ast
         StringAst(const string_type& str) : BaseAst(ATYPE_STRING), m_str(str)
         {
         }
+        virtual bool empty() const
+        {
+            return m_str.empty();
+        }
+        size_t size() const
+        {
+            return m_str.size();
+        }
         virtual void to_dbg(os_type& os) const
         {
             os << "[STRING: " << m_str << "]";
@@ -156,14 +172,6 @@ namespace bnf_ast
             return new StringAst(m_str);
         }
         virtual BaseAst *sorted_clone() const;
-        bool empty() const
-        {
-            return m_str.empty();
-        }
-        size_t size() const
-        {
-            return m_str.size();
-        }
     };
 
     struct SpecialAst : public BaseAst
@@ -172,6 +180,10 @@ namespace bnf_ast
 
         SpecialAst(const string_type& str) : BaseAst(ATYPE_SPECIAL), m_str(str)
         {
+        }
+        virtual bool empty() const
+        {
+            return false;
         }
         virtual void to_dbg(os_type& os) const
         {
@@ -207,6 +219,10 @@ namespace bnf_ast
         ~UnaryAst()
         {
             delete m_arg;
+        }
+        virtual bool empty() const
+        {
+            return false;
         }
         virtual void to_dbg(os_type& os) const;
         virtual void to_bnf(os_type& os) const;
@@ -245,6 +261,10 @@ namespace bnf_ast
         {
             delete m_left;
             delete m_right;
+        }
+        virtual bool empty() const
+        {
+            return false;
         }
         virtual void to_dbg(os_type& os) const;
         virtual void to_bnf(os_type& os) const;
@@ -292,9 +312,16 @@ namespace bnf_ast
         {
             return m_vec.size();
         }
-        bool empty() const
+        virtual bool empty() const
         {
-            return size() == 0;
+            if (m_str == "rules")
+                return false;
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                if (!m_vec[i]->empty())
+                    return false;
+            }
+            return true;
         }
         void unique();
         virtual BaseAst *clone() const;
@@ -308,6 +335,10 @@ namespace bnf_ast
     {
         EmptyAst() : BaseAst(ATYPE_EMPTY)
         {
+        }
+        virtual bool empty() const
+        {
+            return true;
         }
         virtual void to_dbg(os_type& os) const
         {
@@ -327,10 +358,6 @@ namespace bnf_ast
         virtual BaseAst *sorted_clone() const
         {
             return clone();
-        }
-        bool empty() const
-        {
-            return true;
         }
     };
 
@@ -703,28 +730,6 @@ namespace bnf_ast
 
     /////////////////////////////////////////////////////////////////////////
     // AST class inlines
-
-    inline bool BaseAst::empty() const
-    {
-        if (m_atype == ATYPE_EMPTY)
-            return true;
-
-        if (m_atype == ATYPE_STRING)
-        {
-            const StringAst *str = reinterpret_cast<const StringAst *>(this);
-            if (str->empty())
-                return true;
-        }
-
-        if (m_atype == ATYPE_SEQ)
-        {
-            const SeqAst *seq = reinterpret_cast<const SeqAst *>(this);
-            if (seq->empty())
-                return true;
-        }
-
-        return false;
-    }
 
     inline void UnaryAst::to_dbg(os_type& os) const
     {
