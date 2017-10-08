@@ -6,6 +6,8 @@ EbnfParseTest
 EbnfParseTest.exe
 EbnfCompareTest
 EbnfCompareTest.exe
+EbnfJoinTest
+EbnfJoinTest.exe
 *.res
 *.tds
 Debug
