@@ -890,7 +890,7 @@ namespace bnf_ast
                 ast->push_back(cloned);
             }
         }
-        else if (m_str == "expr")
+        else if (m_str == "expr" || m_str == "rules")
         {
             for (size_t i = 0; i < m_vec.size(); ++i)
             {
@@ -899,14 +899,6 @@ namespace bnf_ast
             }
             std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than_sorted);
             ast->unique();
-        }
-        else if (m_str == "rules")
-        {
-            for (size_t i = 0; i < m_vec.size(); ++i)
-            {
-                BaseAst *cloned = m_vec[i]->sorted_clone();
-                ast->push_back(cloned);
-            }
         }
         return ast;
     }
