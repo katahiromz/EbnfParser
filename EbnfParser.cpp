@@ -88,7 +88,7 @@ int main(int argc, char **argv)
         }
         if (arg[0] == '-')
         {
-            printf("ERROR: invalid argument - '%s'\n", arg);
+            printf("ERROR: invalid argument: '%s'\n", arg);
             show_help();
             return 10;
         }
