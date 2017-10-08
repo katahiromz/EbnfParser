@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    15  // Version 15
+#define BNF_AST_HPP_    16  // Version 16
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -890,7 +890,7 @@ namespace bnf_ast
                 ast->push_back(cloned);
             }
         }
-        else if (m_str == "rules" || m_str == "expr")
+        else if (m_str == "expr")
         {
             for (size_t i = 0; i < m_vec.size(); ++i)
             {
@@ -899,6 +899,14 @@ namespace bnf_ast
             }
             std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than_sorted);
             ast->unique();
+        }
+        else if (m_str == "rules")
+        {
+            for (size_t i = 0; i < m_vec.size(); ++i)
+            {
+                BaseAst *cloned = m_vec[i]->sorted_clone();
+                ast->push_back(cloned);
+            }
         }
         return ast;
     }
