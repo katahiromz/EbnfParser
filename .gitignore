@@ -2,6 +2,8 @@ a.txt
 a.exe
 *.o
 *.obj
+EbnfParser
+EbnfParser.exe
 EbnfParseTest
 EbnfParseTest.exe
 EbnfCompareTest
