@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    14  // Version 14
+#define BNF_AST_HPP_    15  // Version 15
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -312,17 +312,7 @@ namespace bnf_ast
         {
             return m_vec.size();
         }
-        virtual bool empty() const
-        {
-            if (m_str == "rules")
-                return false;
-            for (size_t i = 0; i < m_vec.size(); ++i)
-            {
-                if (!m_vec[i]->empty())
-                    return false;
-            }
-            return true;
-        }
+        virtual bool empty() const;
         void unique();
         virtual BaseAst *clone() const;
         virtual BaseAst *sorted_clone() const;
@@ -798,7 +788,6 @@ namespace bnf_ast
         }
         if (m_str == "+" || m_str == "*" || m_str == "?")
         {
-            assert(0);
             m_arg->to_ebnf(os);
             os << m_str;
             return;
@@ -914,6 +903,19 @@ namespace bnf_ast
         return ast;
     }
 
+    inline bool SeqAst::empty() const
+    {
+        if (m_str == "rules")
+            return false;
+
+        for (size_t i = 0; i < m_vec.size(); ++i)
+        {
+            if (!m_vec[i]->empty())
+                return false;
+        }
+        return true;
+    }
+
     inline void SeqAst::unique()
     {
         for (size_t i = 0; i < m_vec.size() - 1; )
@@ -957,7 +959,11 @@ namespace bnf_ast
         }
         if (m_str == "expr")
         {
-            if (m_vec.size())
+            if (empty())
+            {
+                os << "\"\"";
+            }
+            else
             {
                 m_vec[0]->to_bnf(os);
                 for (size_t i = 1; i < m_vec.size(); ++i)
@@ -970,7 +976,11 @@ namespace bnf_ast
         }
         if (m_str == "terms")
         {
-            if (m_vec.size())
+            if (empty())
+            {
+                os << "\"\"";
+            }
+            else
             {
                 m_vec[0]->to_bnf(os);
                 for (size_t i = 1; i < m_vec.size(); ++i)
@@ -996,7 +1006,7 @@ namespace bnf_ast
         }
         if (m_str == "expr")
         {
-            if (m_vec.size())
+            if (!empty())
             {
                 m_vec[0]->to_ebnf(os);
                 for (size_t i = 1; i < m_vec.size(); ++i)
@@ -1009,7 +1019,7 @@ namespace bnf_ast
         }
         if (m_str == "terms")
         {
-            if (m_vec.size())
+            if (!empty())
             {
                 m_vec[0]->to_ebnf(os);
                 for (size_t i = 1; i < m_vec.size(); ++i)
