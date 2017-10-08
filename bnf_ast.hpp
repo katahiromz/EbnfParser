@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    16  // Version 16
+#define BNF_AST_HPP_    18  // Version 18
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -765,14 +765,14 @@ namespace bnf_ast
 
     inline void UnaryAst::to_ebnf(os_type& os) const
     {
-        if (m_str == "optional")
+        if (m_str == "optional" || m_str == "?")
         {
             os << '[';
             m_arg->to_ebnf(os);
             os << ']';
             return;
         }
-        if (m_str == "repeated")
+        if (m_str == "repeated" || m_str == "*")
         {
             os << '{';
             m_arg->to_ebnf(os);
@@ -786,10 +786,13 @@ namespace bnf_ast
             os << ')';
             return;
         }
-        if (m_str == "+" || m_str == "*" || m_str == "?")
+        if (m_str == "+")
         {
+            os << '(';
             m_arg->to_ebnf(os);
-            os << m_str;
+            os << "), {";
+            m_arg->to_ebnf(os);
+            os << '}';
             return;
         }
         assert(0);
