@@ -175,7 +175,14 @@ namespace EBNF
             {
                 return m_str[m_index++];
             }
-            return -1;
+            return 0;
+        }
+        void nextch()
+        {
+            if (m_index < m_str.size())
+            {
+                ++m_index;
+            }
         }
         void ungetch()
         {
@@ -185,6 +192,10 @@ namespace EBNF
         const char *peek() const
         {
             return &m_str.c_str()[m_index];
+        }
+        char peekch() const
+        {
+            return *peek();
         }
         bool match_get(const char *psz)
         {
@@ -291,9 +302,17 @@ namespace EBNF
         {
             return m_scanner.getch();
         }
+        char peekch() const
+        {
+            return m_scanner.peekch();
+        }
         void ungetch()
         {
             m_scanner.ungetch();
+        }
+        void nextch()
+        {
+            m_scanner.nextch();
         }
     };
 
@@ -501,19 +520,21 @@ namespace EBNF
 
         char ch;
         string_type str;
+
         for (;;)
         {
-            // space
-            do
+            for (;;)
             {
-                ch = getch();
-            } while (is_space(ch));
+                ch = peekch();
+                if (!is_space(ch) || ch == 0)
+                    break;
+                // space
+                nextch();
+            }
 
             if (is_digit(ch))
             {
                 // integer
-                ungetch();
-
                 size_t line = get_line();
                 m_scanner.scan_integer(str);
                 Token token(str, TOK_INTEGER, line);
@@ -524,8 +545,6 @@ namespace EBNF
             if (ch == '"' || ch == '\'')
             {
                 // terminal_string
-                ungetch();
-
                 size_t line = get_line();
                 if (m_scanner.scan_terminal_string(str))
                 {
@@ -533,7 +552,6 @@ namespace EBNF
                     m_tokens.push_back(token);
                     continue;
                 }
-
                 m_aux.add_error("terminal string is invalid", line);
                 return false;
             }
@@ -541,8 +559,6 @@ namespace EBNF
             if (is_alpha(ch))
             {
                 // meta_identifier
-                ungetch();
-
                 size_t line = get_line();
                 m_scanner.scan_meta_identifier(str);
                 Token token(str, TOK_IDENT, line);
@@ -550,7 +566,7 @@ namespace EBNF
                 continue;
             }
 
-            if (ch == -1)
+            if (ch == 0)
             {
                 // end of file
                 size_t line = get_line();
@@ -559,35 +575,24 @@ namespace EBNF
                 break;
             }
 
-            if (ch == '(')  // )
+            if (m_scanner.match_get("(*"))  // )
             {
-                ch = getch();
-                if (ch == '*')
+                // comment
+                size_t line = get_line();
+                if (m_scanner.scan_comment(str))
                 {
-                    // comment
-                    ungetch();
-                    ungetch();
-
-                    size_t line = get_line();
-                    if (m_scanner.scan_comment(str))
-                    {
-                        Token token(str, TOK_COMMENT, line);
-                        m_tokens.push_back(token);
-                        continue;
-                    }
-
-                    m_aux.add_error("no end of comment", line);
-                    return false;
+                    Token token(str, TOK_COMMENT, line);
+                    m_tokens.push_back(token);
+                    continue;
                 }
-                ungetch();
-                ch = '(';   // )
+                m_aux.add_error("no end of comment", line);
+                return false;
             }
 
             if (ch == '?')
             {
                 // special
-                ungetch();
-
+                nextch();
                 size_t line = get_line();
                 if (m_scanner.scan_special(str))
                 {
@@ -595,7 +600,6 @@ namespace EBNF
                     m_tokens.push_back(token);
                     continue;
                 }
-
                 // no end of special
                 m_aux.add_error("no end of special", line);
                 return false;
@@ -604,6 +608,7 @@ namespace EBNF
             if (strchr("=;|,-*[]{}()", ch) != NULL)
             {
                 // symbol
+                nextch();
                 size_t line = get_line();
                 str.clear();
                 str += ch;
@@ -657,9 +662,6 @@ namespace EBNF
     {
         ret.clear();
 
-        if (!match_get("(*"))   // *)
-            return false;
-
         for (;;)
         {
             // (*
@@ -667,7 +669,7 @@ namespace EBNF
                 return true;
 
             char ch = getch();
-            if (ch == -1)
+            if (ch == 0)
                 break;
 
             ret += ch;
@@ -680,23 +682,15 @@ namespace EBNF
     {
         ret.clear();
 
-        char ch = *peek();
-        if (ch != '?')
-        {
-            return false;
-        }
-        getch();
-
         for (;;)
         {
-            ch = getch();
-            if (ch == -1)
+            char ch = getch();
+            if (ch == 0)
                 break;
             if (ch == '?')
                 return true;
             ret += ch;
         }
-
         return false;
     }
 
@@ -715,7 +709,7 @@ namespace EBNF
         for (;;)
         {
             ch = getch();
-            if (ch == -1)
+            if (ch == 0)
                 break;
             if (!is_alnum(ch))
             {
@@ -742,7 +736,7 @@ namespace EBNF
         for (;;)
         {
             ch = getch();
-            if (ch == -1)
+            if (ch == 0)
                 break;
             if (!is_digit(ch))
             {
@@ -762,7 +756,7 @@ namespace EBNF
         ret.clear();
 
         char ch = getch();
-        if (ch == -1)
+        if (ch == 0)
             return false;
 
         if (ch != '"' && ch != '\'')
@@ -787,7 +781,7 @@ namespace EBNF
         for (;;)
         {
             ch = getch();
-            if (ch == -1)
+            if (ch == 0)
             {
                 // no end of string
                 return false;
