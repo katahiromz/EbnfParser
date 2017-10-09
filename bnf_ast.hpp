@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    20  // Version 20
+#define BNF_AST_HPP_    22  // Version 22
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -93,6 +93,13 @@ namespace bnf_ast
         const UnaryAst *get_unary_ast() const;
         const SeqAst *get_seq_ast() const;
         const SpecialAst *get_special_ast() const;
+
+        SeqAst *get_expr();
+        SeqAst *get_terms();
+        UnaryAst *get_group();
+        const SeqAst *get_expr() const;
+        const SeqAst *get_terms() const;
+        const UnaryAst *get_group() const;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -341,7 +348,7 @@ namespace bnf_ast
         }
         ~SeqAst()
         {
-            for (size_t i = 0; i < m_vec.size(); ++i)
+            for (size_t i = 0; i < size(); ++i)
             {
                 delete m_vec[i];
             }
@@ -836,6 +843,50 @@ namespace bnf_ast
         return get_ast<SpecialAst, ATYPE_SPECIAL>();
     }
 
+    inline SeqAst *BaseAst::get_expr()
+    {
+        SeqAst *ret = get_seq_ast();
+        if (ret && ret->m_str == "expr")
+            return ret;
+        return NULL;
+    }
+    inline SeqAst *BaseAst::get_terms()
+    {
+        SeqAst *ret = get_seq_ast();
+        if (ret && ret->m_str == "terms")
+            return ret;
+        return NULL;
+    }
+    inline UnaryAst *BaseAst::get_group()
+    {
+        UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "group")
+            return ret;
+        return NULL;
+    }
+
+    inline const SeqAst *BaseAst::get_expr() const
+    {
+        const SeqAst *ret = get_seq_ast();
+        if (ret && ret->m_str == "expr")
+            return ret;
+        return NULL;
+    }
+    inline const SeqAst *BaseAst::get_terms() const
+    {
+        const SeqAst *ret = get_seq_ast();
+        if (ret && ret->m_str == "terms")
+            return ret;
+        return NULL;
+    }
+    inline const UnaryAst *BaseAst::get_group() const
+    {
+        const UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "group")
+            return ret;
+        return NULL;
+    }
+
     inline void UnaryAst::to_dbg(os_type& os) const
     {
         os << "[UNARY " << m_str << ": ";
@@ -949,9 +1000,20 @@ namespace bnf_ast
         }
         if (m_str == "*")
         {
-            m_left->to_bnf(os);
-            os << " * ";
-            m_right->to_bnf(os);
+            const IntegerAst *integer = m_left->get_int_ast();
+            if (const int n = integer->m_integer)
+            {
+                m_right->to_bnf(os);
+                for (int i = 1; i < n; ++i)
+                {
+                    os << " ";
+                    m_right->to_bnf(os);
+                }
+            }
+            else
+            {
+                os << "\"\"";
+            }
             return;
         }
         assert(0);
@@ -976,6 +1038,7 @@ namespace bnf_ast
         }
         if (m_str == "*")
         {
+            assert(m_left->get_int_ast());
             m_left->to_ebnf(os);
             os << " * ";
             m_right->to_ebnf(os);
@@ -987,7 +1050,7 @@ namespace bnf_ast
     inline BaseAst *SeqAst::clone() const
     {
         SeqAst *ast = new SeqAst(m_str);
-        for (size_t i = 0; i < m_vec.size(); ++i)
+        for (size_t i = 0; i < size(); ++i)
         {
             ast->push_back(m_vec[i]->clone());
         }
@@ -999,24 +1062,64 @@ namespace bnf_ast
         SeqAst *ast = new SeqAst(m_str);
         if (m_str == "terms")
         {
-            for (size_t i = 0; i < m_vec.size(); ++i)
+            for (size_t i = 0; i < size(); ++i)
             {
                 if (m_vec[i]->empty())
                     continue;
+
+                if (const UnaryAst *unary = m_vec[i]->get_group())
+                {
+                    const SeqAst *expr = unary->m_arg->get_expr();
+                    if (expr->size() == 1)
+                    {
+                        const SeqAst *terms = expr->m_vec[0]->get_terms();
+                        SeqAst *cloned_terms = terms->sorted_clone()->get_terms();
+                        ast->m_vec.insert(ast->m_vec.end(),
+                                          cloned_terms->m_vec.begin(),
+                                          cloned_terms->m_vec.end());
+                        cloned_terms->m_vec.clear();
+                        delete cloned_terms;
+                        continue;
+                    }
+                }
 
                 BaseAst *cloned = m_vec[i]->sorted_clone();
                 ast->push_back(cloned);
             }
         }
-        else if (m_str == "expr" || m_str == "rules")
+        else if (m_str == "expr")
         {
-            for (size_t i = 0; i < m_vec.size(); ++i)
+            for (size_t i = 0; i < size(); ++i)
             {
+                const SeqAst *terms = m_vec[i]->get_terms();
+                if (terms && terms->size() == 1)
+                {
+                    if (const UnaryAst *unary = terms->m_vec[0]->get_group())
+                    {
+                        const SeqAst *expr = unary->m_arg->get_expr();
+                        SeqAst *cloned_expr = expr->sorted_clone()->get_expr();
+                        ast->m_vec.insert(ast->m_vec.end(),
+                                          cloned_expr->m_vec.begin(),
+                                          cloned_expr->m_vec.end());
+                        cloned_expr->m_vec.clear();
+                        delete cloned_expr;
+                        continue;
+                    }
+                }
+
                 BaseAst *cloned = m_vec[i]->sorted_clone();
                 ast->push_back(cloned);
             }
             std::sort(ast->m_vec.begin(), ast->m_vec.end(), ast_less_than_sorted);
             ast->unique();
+        }
+        else if (m_str == "rules")
+        {
+            for (size_t i = 0; i < size(); ++i)
+            {
+                BaseAst *cloned = m_vec[i]->sorted_clone();
+                ast->push_back(cloned);
+            }
         }
         return ast;
     }
@@ -1026,7 +1129,7 @@ namespace bnf_ast
         if (m_str == "rules")
             return false;
 
-        for (size_t i = 0; i < m_vec.size(); ++i)
+        for (size_t i = 0; i < size(); ++i)
         {
             if (!m_vec[i]->empty())
                 return false;
@@ -1036,7 +1139,7 @@ namespace bnf_ast
 
     inline void SeqAst::unique()
     {
-        for (size_t i = 0; i < m_vec.size() - 1; )
+        for (size_t i = 0; i < size() - 1; )
         {
             if (ast_equal(m_vec[i], m_vec[i + 1], true))
             {
@@ -1053,10 +1156,10 @@ namespace bnf_ast
     inline void SeqAst::to_dbg(os_type& os) const
     {
         os << "[SEQ " << m_str << ": ";
-        if (m_vec.size())
+        if (size())
         {
             m_vec[0]->to_dbg(os);
-            for (size_t i = 1; i < m_vec.size(); ++i)
+            for (size_t i = 1; i < size(); ++i)
             {
                 os << ", ";
                 m_vec[i]->to_dbg(os);
@@ -1069,7 +1172,7 @@ namespace bnf_ast
     {
         if (m_str == "rules")
         {
-            for (size_t i = 0; i < m_vec.size(); ++i)
+            for (size_t i = 0; i < size(); ++i)
             {
                 m_vec[i]->to_bnf(os);
             }
@@ -1084,7 +1187,7 @@ namespace bnf_ast
             else
             {
                 m_vec[0]->to_bnf(os);
-                for (size_t i = 1; i < m_vec.size(); ++i)
+                for (size_t i = 1; i < size(); ++i)
                 {
                     os << " | ";
                     m_vec[i]->to_bnf(os);
@@ -1101,7 +1204,7 @@ namespace bnf_ast
             else
             {
                 m_vec[0]->to_bnf(os);
-                for (size_t i = 1; i < m_vec.size(); ++i)
+                for (size_t i = 1; i < size(); ++i)
                 {
                     os << " ";
                     m_vec[i]->to_bnf(os);
@@ -1116,7 +1219,7 @@ namespace bnf_ast
     {
         if (m_str == "rules")
         {
-            for (size_t i = 0; i < m_vec.size(); ++i)
+            for (size_t i = 0; i < size(); ++i)
             {
                 m_vec[i]->to_ebnf(os);
             }
@@ -1127,7 +1230,7 @@ namespace bnf_ast
             if (!empty())
             {
                 m_vec[0]->to_ebnf(os);
-                for (size_t i = 1; i < m_vec.size(); ++i)
+                for (size_t i = 1; i < size(); ++i)
                 {
                     os << " | ";
                     m_vec[i]->to_ebnf(os);
@@ -1140,7 +1243,7 @@ namespace bnf_ast
             if (!empty())
             {
                 m_vec[0]->to_ebnf(os);
-                for (size_t i = 1; i < m_vec.size(); ++i)
+                for (size_t i = 1; i < size(); ++i)
                 {
                     os << ", ";
                     m_vec[i]->to_ebnf(os);
