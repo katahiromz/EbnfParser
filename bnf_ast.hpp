@@ -432,9 +432,11 @@ namespace bnf_ast
           BaseAst *ast_get_rule_body(      BaseAst *rules, const string_type& rule_name);
     const BaseAst *ast_get_rule_body(const BaseAst *rules, const string_type& rule_name);
 
-    void ast_join_joinable_rules(BaseAst *rules);
+    bool ast_join_joinable_rules(BaseAst *rules);
 
     void name_increment(string_type& name);
+
+    void ast_add_rule(BaseAst *rules, string_type& name, const BaseAst *rule_expr);
 
     /////////////////////////////////////////////////////////////////////////
     // AST function inlines
@@ -733,13 +735,14 @@ namespace bnf_ast
         return NULL;
     }
 
-    inline void ast_join_joinable_rules(BaseAst *rules)
+    inline bool ast_join_joinable_rules(BaseAst *rules)
     {
+        bool ret = false;
         assert(rules->m_atype == ATYPE_SEQ);
         rules_vector *pvec = ast_get_rules_vector(rules);
         assert(pvec);
         if (pvec->size() == 0)
-            return;
+            return false;
 
         for (size_t i = 0; i < (*pvec).size() - 1; ++i)
         {
@@ -769,8 +772,11 @@ namespace bnf_ast
                 (*pvec)[k] = NULL;
                 pvec->erase(pvec->begin() + k);
                 --k;
+                ret = true;
             }
         }
+
+        return ret;
     }
 
     inline void name_increment(string_type& name)
@@ -788,6 +794,53 @@ namespace bnf_ast
         char buf[32];
         std::sprintf(buf, "%02u", n + 1);
         name += buf;
+    }
+
+    inline void ast_add_rule(BaseAst *rules, string_type& name, const BaseAst *rule_expr)
+    {
+        assert(rule_expr->get_expr());
+        ast_join_joinable_rules(rules);
+
+        rules_vector *pvec = ast_get_rules_vector(rules);
+        assert(pvec);
+        if (pvec->size() == 0)
+            return;
+
+        for (size_t i = 0; i < pvec->size(); ++i)
+        {
+            BinaryAst *bin = (*pvec)[i];
+            if (ast_equal(bin->m_right, rule_expr))
+            {
+                IdentAst *ident = bin->m_left->get_ident_ast();
+                name = ident->m_name;
+                return;
+            }
+        }
+
+        for (;;)
+        {
+            bool flag = false;
+            for (size_t i = 0; i < pvec->size(); ++i)
+            {
+                BinaryAst *bin = (*pvec)[i];
+                IdentAst *ident = bin->m_left->get_ident_ast();
+                if (name == ident->m_name)
+                {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag)
+                break;
+
+            name_increment(name);
+        }
+
+        IdentAst *ident = new IdentAst(name);
+        SeqAst *expr = rule_expr->sorted_clone()->get_expr();
+        assert(expr);
+        BinaryAst *bin = new BinaryAst("rule", ident, expr);
+        pvec->push_back(bin);
     }
 
     /////////////////////////////////////////////////////////////////////////
