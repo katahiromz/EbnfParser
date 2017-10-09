@@ -430,6 +430,8 @@ namespace bnf_ast
 
     void ast_join_joinable_rules(BaseAst *rules);
 
+    void name_increment(string_type& name);
+
     /////////////////////////////////////////////////////////////////////////
     // AST function inlines
 
@@ -765,6 +767,23 @@ namespace bnf_ast
                 --k;
             }
         }
+    }
+
+    inline void name_increment(string_type& name)
+    {
+        size_t i = name.find_last_not_of("0123456789");
+        if (i == string_type::npos || i == name.size() - 1)
+        {
+            name += "_02";
+            return;
+        }
+        ++i;
+        string_type str = name.substr(0, i);
+        int n = atoi(name.substr(i).c_str());
+        name = str;
+        char buf[32];
+        std::sprintf(buf, "%02u", n + 1);
+        name += buf;
     }
 
     /////////////////////////////////////////////////////////////////////////
