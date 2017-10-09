@@ -40,6 +40,9 @@ static const COMPARE_TEST_ENTRY g_test_entries[] =
     { 12, TR_EQUAL, "test = a | (b | c);", "test = a | b | c;" },
     { 13, TR_EQUAL, "test = a | (b, c);", "test = a | b, c;" },
     { 14, TR_GREATER_THAN, "expr = term, ('+' | '-'), expr;", "expr = term, '+' | '-', expr;" },
+    { 15, TR_EQUAL, "expr = ((((a))));", "expr = a;" },
+    { 16, TR_EQUAL, "d = (((a) | b) | c);", "d = a | b | c;" },
+    { 17, TR_EQUAL, "d = (((a), b), c);", "d = a, b, c;" },
 };
 
 static EBNF::SeqAst *do_parse(const std::string& str)
