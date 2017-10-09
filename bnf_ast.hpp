@@ -97,9 +97,13 @@ namespace bnf_ast
         SeqAst *get_expr();
         SeqAst *get_terms();
         UnaryAst *get_group();
+        UnaryAst *get_repeated();
+        UnaryAst *get_optional();
         const SeqAst *get_expr() const;
         const SeqAst *get_terms() const;
         const UnaryAst *get_group() const;
+        const UnaryAst *get_repeated() const;
+        const UnaryAst *get_optional() const;
     private:
         BaseAst();
         BaseAst(const BaseAst&);
@@ -883,6 +887,20 @@ namespace bnf_ast
             return ret;
         return NULL;
     }
+    inline UnaryAst *BaseAst::get_repeated()
+    {
+        UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "repeated")
+            return ret;
+        return NULL;
+    }
+    inline UnaryAst *BaseAst::get_optional()
+    {
+        UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "optional")
+            return ret;
+        return NULL;
+    }
 
     inline const SeqAst *BaseAst::get_expr() const
     {
@@ -902,6 +920,20 @@ namespace bnf_ast
     {
         const UnaryAst *ret = get_unary_ast();
         if (ret && ret->m_str == "group")
+            return ret;
+        return NULL;
+    }
+    inline const UnaryAst *BaseAst::get_repeated() const
+    {
+        const UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "repeated")
+            return ret;
+        return NULL;
+    }
+    inline const UnaryAst *BaseAst::get_optional() const
+    {
+        const UnaryAst *ret = get_unary_ast();
+        if (ret && ret->m_str == "optional")
             return ret;
         return NULL;
     }
