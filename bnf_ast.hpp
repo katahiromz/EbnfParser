@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    23  // Version 23
+#define BNF_AST_HPP_    24  // Version 24
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -1171,6 +1171,9 @@ namespace bnf_ast
                     if (expr->size() == 1)
                     {
                         const SeqAst *terms = expr->m_vec[0]->get_terms();
+                        if (terms->empty())
+                            continue;
+
                         SeqAst *cloned_terms = terms->sorted_clone()->get_terms();
                         ast->m_vec.insert(ast->m_vec.end(),
                                           cloned_terms->m_vec.begin(),
