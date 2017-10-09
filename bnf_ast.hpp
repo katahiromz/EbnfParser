@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    24  // Version 24
+#define BNF_AST_HPP_    25  // Version 25
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -112,11 +112,13 @@ namespace bnf_ast
 
     struct IdentAst : public BaseAst
     {
-        string_type     m_name;
+        // NOTE: Every '-' and ' ' will be converted to '_'.
+        string_type     m_name;     // generic name
 
-        IdentAst(const string_type& name) : BaseAst(ATYPE_IDENT), m_name(name)
-        {
-        }
+        IdentAst(const string_type& name);
+        string_type bnf_name() const;
+        string_type ebnf_name() const;
+
         virtual bool empty() const
         {
             return false;
@@ -127,23 +129,11 @@ namespace bnf_ast
         }
         virtual void to_bnf(os_type& os) const
         {
-            string_type name = m_name;
-            for (size_t i = 0; i < name.size(); ++i)
-            {
-                if (name[i] == ' ')
-                    name[i] = '-';
-            }
-            os << "<" << name << ">";
+            os << "<" << bnf_name() << ">";
         }
         virtual void to_ebnf(os_type& os) const
         {
-            string_type name = m_name;
-            for (size_t i = 0; i < name.size(); ++i)
-            {
-                if (name[i] == '-')
-                    name[i] = ' ';
-            }
-            os << name;
+            os << ebnf_name();
         }
         virtual BaseAst *clone() const
         {
@@ -796,6 +786,8 @@ namespace bnf_ast
 
     inline void ast_add_rule(BaseAst *rules, string_type& name, const BaseAst *rule_expr)
     {
+        assert(!ast_join_joinable_rules(rules));
+
         rules_vector *pvec = ast_get_rules_vector(rules);
         assert(pvec);
 
@@ -838,7 +830,39 @@ namespace bnf_ast
     }
 
     /////////////////////////////////////////////////////////////////////////
-    // AST inlines
+    // AST method inlines
+
+    inline IdentAst::IdentAst(const string_type& name)
+        : BaseAst(ATYPE_IDENT), m_name(name)
+    {
+        for (size_t i = 0; i < m_name.size(); ++i)
+        {
+            if (m_name[i] == '-' || m_name[i] == ' ')
+            {
+                m_name[i] = '_';
+            }
+        }
+    }
+    inline string_type IdentAst::bnf_name() const
+    {
+        string_type ret = m_name;
+        for (size_t i = 0; i < ret.size(); ++i)
+        {
+            if (ret[i] == '_' || ret[i] == ' ')
+                ret[i] = '-';
+        }
+        return ret;
+    }
+    inline string_type IdentAst::ebnf_name() const
+    {
+        string_type ret = m_name;
+        for (size_t i = 0; i < ret.size(); ++i)
+        {
+            if (ret[i] == '_' || ret[i] == '-')
+                ret[i] = ' ';
+        }
+        return ret;
+    }
 
     template <typename T, AstType atype>
     inline T *BaseAst::get_ast()
