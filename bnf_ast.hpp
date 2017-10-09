@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    22  // Version 22
+#define BNF_AST_HPP_    23  // Version 23
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -706,8 +706,6 @@ namespace bnf_ast
             BinaryAst *bin = (*pvec)[i];
             names.push_back(ast_get_rule_name(bin));
         }
-        std::sort(names.begin(), names.end());
-        names.erase(std::unique(names.begin(), names.end()), names.end());
     }
 
     inline const BaseAst *
