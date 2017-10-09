@@ -798,14 +798,10 @@ namespace bnf_ast
 
     inline void ast_add_rule(BaseAst *rules, string_type& name, const BaseAst *rule_expr)
     {
-        assert(rule_expr->get_expr());
-        ast_join_joinable_rules(rules);
-
         rules_vector *pvec = ast_get_rules_vector(rules);
         assert(pvec);
-        if (pvec->size() == 0)
-            return;
 
+        assert(rule_expr->get_expr());
         for (size_t i = 0; i < pvec->size(); ++i)
         {
             BinaryAst *bin = (*pvec)[i];
