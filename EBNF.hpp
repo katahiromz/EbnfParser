@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef EBNF_HPP_
-#define EBNF_HPP_   14  // Version 14
+#define EBNF_HPP_   15  // Version 15
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -634,7 +634,7 @@ namespace EBNF
             if (m_tokens[i].m_type == TOK_IDENT &&
                 m_tokens[i + 1].m_type == TOK_IDENT)
             {
-                m_tokens[i].m_str += " ";
+                m_tokens[i].m_str += "-";
                 m_tokens[i].m_str += m_tokens[i + 1].m_str;
                 m_tokens.erase(m_tokens.begin() + (i + 1));
                 --i;
@@ -710,7 +710,7 @@ namespace EBNF
             ch = getch();
             if (ch == 0)
                 break;
-            if (!is_alnum(ch))
+            if (!is_alnum(ch) && ch != '-')
             {
                 ungetch();
                 break;

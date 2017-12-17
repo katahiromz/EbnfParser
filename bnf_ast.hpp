@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef BNF_AST_HPP_
-#define BNF_AST_HPP_    25  // Version 25
+#define BNF_AST_HPP_    26  // Version 26
 
 #include <string>           // for std::string
 #include <vector>           // for std::vector
@@ -858,8 +858,8 @@ namespace bnf_ast
         string_type ret = m_name;
         for (size_t i = 0; i < ret.size(); ++i)
         {
-            if (ret[i] == '_' || ret[i] == '-')
-                ret[i] = ' ';
+            if (ret[i] == '_' || ret[i] == ' ')
+                ret[i] = '-';
         }
         return ret;
     }
