@@ -14,7 +14,7 @@ declaration = declaration-specifiers, [init-declarator-list], ';'
             | static-assert-declaration
             | ';';
 
-declaration-specifiers = {declaration-specifier};
+declaration-specifiers = declaration-specifier, {declaration-specifier};
 
 declaration-specifier = storage-class-specifier
                       | type-specifier
@@ -26,7 +26,9 @@ declarator = [pointer], direct-declarator;
 
 declaration-list = declaration, {declaration};
 
-compound-statement = '{', {declaration | statement}, '}';
+compound-statement = '{', {declaration-or-statement}, '}';
+
+declaration-or-statement = declaration | statement;
 
 init-declarator-list = init-declarator, {',', init-declarator};
 
@@ -72,26 +74,27 @@ function-specifier = 'inline'
 alignment-specifier = '_Alignas', '(', type-name, ')'
                     | '_Alignas', '(', constant-expression, ')';
 
-pointer = '*', type-qualifier-list, [pointer]
-        | '*', [pointer];
+pointer = '*', [type-qualifier-list], [pointer];
 
 direct-declarator = identifier
                   | '(', declarator, ')'
-                  | direct-declarator, '[', ']'
-                  | direct-declarator, '[', '*', ']'
-                  | direct-declarator, '[', 'static', type-qualifier-list, assignment-expression, ']'
-                  | direct-declarator, '[', 'static', assignment-expression, ']'
+                  | direct-declarator, '[', ['*'], ']'
+                  | direct-declarator, '[', 'static', [type-qualifier-list], assignment-expression, ']'
                   | direct-declarator, '[', type-qualifier-list, ['*'], ']'
-                  | direct-declarator, '[', type-qualifier-list, 'static', assignment-expression, ']'
-                  | direct-declarator, '[', type-qualifier-list, assignment-expression, ']'
+                  | direct-declarator, '[', type-qualifier-list, ['static'], assignment-expression, ']'
                   | direct-declarator, '[', assignment-expression, ']'
-                  | direct-declarator, '(', [parameter-type-list], ')'
-                  | direct-declarator, '(', {identifier-list}, ')';
+                  | direct-declarator, '(', parameter-type-list, ')'
+                  | direct-declarator, '(', identifier-list, ')'
+                  | direct-declarator, '(', ')';
+
+identifier-list = identifier, {',', identifier};
+
+initializer-list = designative-initializer, {',', designative-initializer};
+
+designative-initializer = [designation], initializer;
 
 initializer = '{', initializer-list, [','], '}'
             | assignment-expression;
-
-initializer-list = [designation], initializer, {',', [designation], initializer};
 
 constant-expression = conditional-expression;  (* with constraints *)
 
@@ -121,27 +124,30 @@ enumeration-constant = identifier;
 
 type-name = specifier-qualifier-list, [abstract-declarator];
 
-specifier-qualifier-list = (type-specifier | type-qualifier), {type-specifier | type-qualifier};
+specifier-qualifier-list = specifier-qualifier, {specifier-qualifier};
+
+specifier-qualifier = type-specifier | type-qualifier;
 
 abstract-declarator = pointer, [direct-abstract-declarator]
                     | direct-abstract-declarator;
 
 direct-abstract-declarator = '(', abstract-declarator, ')'
-                           | '(', [parameter-type-list], ')'
+                           | '(', parameter-type-list, ')'
+                           | '(', ')'
                            | '[', ['*'], ']'
                            | '[', 'static', [type-qualifier-list], assignment-expression, ']'
                            | '[', type-qualifier-list, [['static'], assignment-expression], ']'
                            | '[', assignment-expression, ']'
-                           | direct-abstract-declarator, '(', [parameter-type-list], ')'
                            | direct-abstract-declarator, '[', ['*'], ']'
                            | direct-abstract-declarator, '[', 'static', [type-qualifier-list], assignment-expression, ']'
-                           | direct-abstract-declarator, '[', [type-qualifier-list], assignment-expression, ']'
-                           | direct-abstract-declarator, '[', type-qualifier-list, ['static', assignment-expression], ']'
-                           | direct-abstract-declarator, '[', type-qualifier-list, ']';
+                           | direct-abstract-declarator, '[', type-qualifier-list, [['static'], assignment-expression], ']'
+                           | direct-abstract-declarator, '[', assignment-expression, ']'
+                           | direct-abstract-declarator, '(', parameter-type-list, ')'
+                           | direct-abstract-declarator, '(', ')';
 
 struct-declarator-list = struct-declarator, {',', struct-declarator};
 
-type-qualifier-list = {type-qualifier};
+type-qualifier-list = type-qualifier, {type-qualifier};
 
 parameter-type-list = parameter-list, [',', '...'];
 
@@ -245,7 +251,6 @@ designator-list = designator, {designator};
 designator = '[', constant-expression, ']'
            | '.', identifier;
 
-
 statement = labeled-statement
           | compound-statement
           | expression-statement
@@ -257,8 +262,7 @@ labeled-statement = identifier, ':', statement
                   | 'case', constant-expression, ':', statement
                   | 'default', ':', statement;
 
-expression-statement = ';'
-                     | expression, ';';
+expression-statement = [expression], ';';
 
 selection-statement = 'if', '(', expression, ')', statement, 'else', statement
                     | 'if', '(', expression, ')', statement
